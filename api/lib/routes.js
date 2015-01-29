@@ -20,45 +20,42 @@ function routes(next, data) {
             var user = req.query.user,
                 pass = req.query.pass,
                 juri = req.query.jurisdiction,
-                from = req.header('Referer') || '/';
-            async.parallel([
-                _.partial(auth.checkDetails, juri, user, pass),
-                _.partial(auth.getRoles, user)
-            ], function complete(err, results) {
-                var valid = results[0];
-                var data = {
-                    jurisdiction: juri,
-                    user: user,
-                    roles: results[1],
-                    error: err || null
-                    // TODO: Add some sort of token.
-                };
-                if (err || !valid) {
+                from = req.header('Referer') || '/',
+                ip   = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            async.auto({
+                check: _.partial(auth.checkDetails, juri, user, pass),
+                roles: ['check', _.partial(auth.getRoles, user)],
+                cookie: ['check', 'roles', function (cb, data) {
+                    auth.bakeCookie(user, data.roles, ip, cb);
+                }],
+            }, function complete(err, results) {
+                // Something failed.
+                if (err) {
                     // Clients may not necessarily want HTML.
-                    res.format({
+                    res.status(401).format({
                         json: function () {
                             // Send data.
-                            res.status(401).json(data);
+                            res.json({failure: true});
                         },
                         html: function () {
                             // Send back where they came from.
-                            res.status(401).render('login', data);
+                            res.render('login', data);
                         }
                     });
+                // All is fine.
                 } else {
-                    res.format({
+                    res.status(200).format({
                         json: function () {
-                            res.status(200).json(data);
+                            res.json(data.cookie);
                         },
                         html: function () {
-                            res.status(200).redirect(from);
+                            req.signedCookie.auth = data.cookie;
+                            // TODO: Is this enough? Should we include it
+                            // some other way?
+                            res.redirect(from);
                         }
                     });
                 }
-            });
-            auth.checkDetails(juri, user, pass, function (err, valid) {
-
-
             });
         });
     // TODO: Add an auth check route.

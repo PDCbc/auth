@@ -4,6 +4,29 @@ var async = require('async'),
     logger = require('./logger');
 
 /**
+ * Adds a user to DACS.
+ * @param {String}   jurisdiction The jurisdiction of the user.
+ * @param {String}   user         The username.
+ * @param {String}   password     The user password.
+ * @param {Function} next         The callback, signature (Error, Boolean).
+ */
+function addUser(jurisdiction, user, password, next) {
+    var exec = require('child_process').exec,
+        juri_opts = '-uj ' + jurisdiction,
+        pass_opts = '-p ' + password,
+        other_opts = '-a' + user,
+        command = ['dacspasswd', juri_opts, pass_opts, other_opts].join(' ');
+    exec(command, function finish(err, stdout, stderr) {
+        if (err !== null) {
+            // Status code is not 0.
+            next(err, false);
+        } else {
+            next(err, true);
+        }
+    });
+}
+
+/**
 * Uses DACS' local module.
 * Determines whether the login details are valid.
 * @param  {String}   jurisdiction The jurisdiction of the user.
@@ -18,14 +41,10 @@ function checkDetails(jurisdiction, user, pass, next) {
         fed_opts = '-fn ' + process.env.FEDERATION + '-fj ' + jurisdiction,
         login_opts = '-u ' + user + ' -p ' + pass,
         command = ['dacsauth', module_opts, vfs_opts, login_opts].join(' ');
-
     exec(command, function finish(err, stdout, stderr) {
-        if (err !== null) {
-            // The status code is not 0.
-            next(err, false);
-        } else {
-            next(null, true);
-        }
+        // `err` is not null if the status code is not 0.
+        // This would mean login failed.
+        next(err);
     });
 }
 
@@ -35,12 +54,15 @@ function checkDetails(jurisdiction, user, pass, next) {
  * @param {String}   ip   The IP address the user is originating from.
  * @param {Function} next The callback, signature (Error, String).
  */
-function bakeCookie(user, ip, next) {
+function bakeCookie(user, roles, ip, next) {
+    // TODO: Can't pass user-agent (https://dacs.dss.ca/man/dacscookie.1.html)
+    //       This is because we can't decrypt it.
     var exec = require('child_process').exec,
         fed_opts = "-u " + process.env.FEDERATION,
-        name_opts = '-user ' + user,
         ip_opts = '-ip ' + ip,
-        command = ['dacscookie', fed_opts, ip_opts, name_opts].join(' ');
+        role_opts = '-role ' + roles,
+        name_opts = '-user ' + user,
+        command = ['dacscookie', fed_opts, ip_opts, role_opts, name_opts].join(' ');
     exec(command, function pass(err, stdout, stderr) {
         return next(err, stdout);
     });
@@ -79,7 +101,6 @@ function getRoles(user, next) {
         vfs_opts = '-vfs "[roles]dacs-kwv-fs:/etc/dacs/federations/roles"',
         login_opts = '-u ' + user,
         command = ['dacsauth', module_opts, vfs_opts, login_opts].join(' ');
-
     exec(command, function parse(err, stdout, stderr) {
         if (err) {
             // The status code is not 0.

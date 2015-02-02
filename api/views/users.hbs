@@ -1,0 +1,50 @@
+<html>
+    {{> head}}
+<body>
+    <div class="container">
+        <div class="row">
+            <!-- User List -->
+            <!-- TODO: Format -->
+            <pre>{{users}}</pre>
+
+            <!-- User Add -->
+            <form method="POST" role="form" class="form-horizontal">
+                <legend>Add User</legend>
+                <div class="form-group">
+                    <label for="juri" class="col-sm-1 col-sm-offset-2">Jurisdiction</label>
+                    <div class="col-sm-7">
+                        <!-- TODO: Make a dropdown? -->
+                        <input type="text" id="juri" name="juri" class="form-control" required />
+                    </div> <!-- col-sm-7 -->
+                </div> <!-- form-group -->
+
+                <div class="form-group">
+                    <label for="user" class="col-sm-1 col-sm-offset-2">User</label>
+                    <div class="col-sm-7">
+                        <input type="text" id="user" name="user" class="form-control" required />
+                    </div> <!-- col-sm-7 -->
+                </div> <!-- form-group -->
+
+                <div class="form-group">
+                    <label for="pass" class="col-sm-1 col-sm-offset-2">Pass</label>
+                    <div class="col-sm-7">
+                        <input type="password" id="pass" name="pass" class="form-control" required />
+                    </div> <!-- col-sm-7 -->
+                </div> <!-- form-group -->
+
+                <div class="form-group">
+                    <label></label>
+                    <div class="col-sm-7 col-sm-offset-3 text-center">
+                        <button href="/auth" class="btn btn-primary btn-labeled">
+                            <span class="btn-label pull-left">
+                                <i class="fa fa-plus"></i>
+                            </span>
+                            Create
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div> <!-- row -->
+    </div> <!-- container -->
+</body>
+</html>

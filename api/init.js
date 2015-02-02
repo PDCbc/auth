@@ -1,7 +1,7 @@
 'use strict';
 var async = require('async'),
     _ = require('lodash'),
-    logger = require('./logger');
+    logger = require('./lib/logger');
 
 
 async.auto({
@@ -19,7 +19,12 @@ async.auto({
 function complete(error, data) {
     if (error) { logger.error(error); throw error; }
     // No errors
-    require('https').createServer(data.certificate, data.httpd).listen(process.env.PORT, function () {
-        logger.success('Server listening on port ' + process.env.PORT);
-    });
+    require('https').createServer(data.certificate, data.httpd.main)
+        .listen(process.env.MAINPORT, function () {
+            logger.success('Main listening on port ' + process.env.MAINPORT);
+        });
+    require('https').createServer(data.certificate, data.httpd.control)
+        .listen(process.env.CONTROLPORT, function () {
+            logger.success('Control listening on port ' + process.env.CONTROLPORT);
+        });
 }

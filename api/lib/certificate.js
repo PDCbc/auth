@@ -2,7 +2,7 @@
 var async = require('async'),
     _ = require('lodash'),
     logger = require('./logger');
-    
+
 /**
 * Setup the SSL Certificates.
 * @param {Function} next The async callback. Signature (error, result)

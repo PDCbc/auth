@@ -2,8 +2,9 @@
 var async = require('async'),
     _ = require('lodash'),
     logger = require('./logger');
+
 var express = require('express'),
-    auth = require('auth');
+    auth    = require('./auth');
 
 /**
 * Sets up the standard routes for the application. Check the express documentation on routers.
@@ -62,44 +63,78 @@ function routes(next, data) {
 
 
     var userRouter = new express.Router();
-    userRouter.get('/',
-        auth.hasRole('admin'),
-        function (req, res) {
-
-        });
-    userRouter.post('/add',
-        auth.hasRole('admin'),
-        function (req, res) {
-            var user = req.query.user,
-                role = req.query.role;
-        });
-
-    userRouter.post('/remove',
-        auth.hasRole('admin'),
-        function (req, res) {
-            var user = req.query.user,
-                role = req.query.role;
+    userRouter.use(auth.hasRole('admin'));
+    userRouter.route('/')
+        .get(function (req, res) {
+            auth.listUsers(function (err, users) {
+                if (err) { res.status(500).send(); }
+                else     { res.render('users', { users: users }); }
+            });
+        })
+        .post(function (req, res) {
+            var from = req.header('Referer') || '/',
+                user = req.body.user,
+                juri = req.body.jurisdiction,
+                pass = req.body.password;
+            auth.addUser(juri, user, pass, function (err) {
+                if (err) { res.status(500).send(); }
+                else     { res.status(200).redirect(from); }
+            });
+        })
+        .delete(function (req, res) {
+            var from = req.header('Referer') || '/',
+                user = req.body.user,
+                juri = req.body.jurisdiction;
+            auth.delUser(juri, user, function (err) {
+                if (err) { res.status(500).send(); }
+                else     { res.status(200).redirect(from); }
+            });
         });
 
     var roleRouter = new express.Router();
-    roleRouter.route('/',
-        auth.hasRole('admin'),
-        function (req, res) {
+    roleRouter.use(auth.hasRole('admin'));
+    roleRouter.route('/')
+        .get(function (req, res) {
+            res.render('roles', {});
+        })
+        .post(function (req, res) {
+            var from = req.header('Referer') || '/',
+                user = req.body.user,
+                juri = req.body.jurisdiction,
+                role = req.body.role;
+            auth.addRole(juri, user, role, function (err) {
+                if (err) { res.status(500); }
+                else     { res.status(200).redirect(from); }
+            });
+        })
+        .delete(function (req, res) {
+            var from = req.header('Referer') || '/',
+                user = req.body.user,
+                juri = req.body.jurisdiction,
+                role = req.body.role;
+            auth.delRole(juri, user, role, function (err) {
+                if (err) { res.status(500); }
+                else     { res.status(200).redirect(from); }
+            });
+        });
 
-        });
-    roleRouter.post('/add',
-        auth.hasRole('admin'),
-        function (req, res) {
-            var user = req.query.user,
-            role = req.query.role;
-        });
+    var verifyRouter = new express.Router();
+    verifyRouter.post('/verify', function (req, res) {
+        var bakedCookie = req.body.bakedCookie;
+        auth.unbakeCookie(bakedCookie, function (err, unbaked) {
+            if (err) { res.status(500); }
+            else     { res.status(200).json(unbaked); }
+        })
+    });
 
-    roleRouter.post('/remove',
-        auth.hasRole('admin'),
-        function (req, res) {
-            var user = req.query.user,
-            role = req.query.role;
-        });
+    var mainRouter = data.httpd.main;
+    mainRouter.use('/auth', authRouter);
+    var controlRouter = data.httpd.control;
+    controlRouter.use('/users', userRouter);
+    controlRouter.use('/roles', roleRouter);
+    controlRouter.use('/auth', authRouter);
+
+    next(null);
 }
 
 // This task depends on `httpd` task.

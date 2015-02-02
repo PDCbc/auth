@@ -14,7 +14,7 @@ function addUser(jurisdiction, user, password, next) {
     var exec = require('child_process').exec,
         juri_opts = '-uj ' + jurisdiction,
         pass_opts = '-p ' + password,
-        other_opts = '-a' + user,
+        other_opts = '-a ' + user,
         command = ['dacspasswd', juri_opts, pass_opts, other_opts].join(' ');
     exec(command, function finish(err, stdout, stderr) {
         if (err !== null) {
@@ -24,6 +24,40 @@ function addUser(jurisdiction, user, password, next) {
             next(err, true);
         }
     });
+}
+/**
+ * Removes a user from DACS.
+ * @param {String}   jurisdiction The jurisdiction of the user.
+ * @param {String}   user         The username.
+ * @param {Function} next         The callback, signature (Error, Boolean).
+ */
+function delUser(jurisdiction, user, next) {
+    var exec = require('child_process').exec,
+        juri_opts = '-uj ' + jurisdiction,
+        other_opts = '-d ' + user,
+        command = ['dacspasswd', juri_opts, other_opts].join(' ');
+    exec(command, function finish(err, stdout, stderr) {
+        if (err !== null) {
+            // Status code is not 0.
+            next(err, false);
+        } else {
+            next(err, true);
+        }
+    });
+}
+
+function listUsers(next) {
+    var exec = require('child_process').exec,
+        other_opts = '-l',
+        command = ['dacspasswd', other_opts].join(' ');
+    exec(command, next);
+}
+
+function addRole(jurisdiction, user, role, next) {
+    logger.error("addRole Not implemented yet!");
+}
+function delRole(jurisdiction, user, role, next) {
+    logger.error("delRole Not implemented yet!");
 }
 
 /**

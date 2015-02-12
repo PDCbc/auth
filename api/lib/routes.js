@@ -18,9 +18,9 @@ function routes(next, data) {
             res.render('login', {});
         })
         .post(function (req, res) {
-            var user = req.query.user,
-                pass = req.query.pass,
-                juri = req.query.jurisdiction,
+            var user = req.body.user,
+                pass = req.body.pass,
+                juri = req.body.juri,
                 from = req.header('Referer') || '/',
                 ip   = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             async.auto({
@@ -45,7 +45,7 @@ function routes(next, data) {
                     });
                 // All is fine.
                 } else {
-                    res.status(200).format({
+                    res.format({
                         json: function () {
                             res.json(data.cookie);
                         },
@@ -67,18 +67,21 @@ function routes(next, data) {
     userRouter.route('/')
         .get(function (req, res) {
             auth.listUsers(function (err, users) {
-                if (err) { res.status(500).send(); }
-                else     { res.render('users', { users: users }); }
+                console.log(users);
+                if (err) { res.send(); logger.dir(err); }
+                else     {
+                    res.render('users', { users: users });
+                }
             });
         })
         .post(function (req, res) {
             var from = req.header('Referer') || '/',
                 user = req.body.user,
-                juri = req.body.jurisdiction,
+                juri = req.body.juri,
                 pass = req.body.password;
             auth.addUser(juri, user, pass, function (err) {
-                if (err) { res.status(500).send(); }
-                else     { res.status(200).redirect(from); }
+                if (err) { res.status(500).send(); logger.dir(err); }
+                else     { res.redirect(from); }
             });
         })
         .delete(function (req, res) {
@@ -87,7 +90,7 @@ function routes(next, data) {
                 juri = req.body.jurisdiction;
             auth.delUser(juri, user, function (err) {
                 if (err) { res.status(500).send(); }
-                else     { res.status(200).redirect(from); }
+                else     { res.redirect(from); }
             });
         });
 

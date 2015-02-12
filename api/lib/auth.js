@@ -48,9 +48,46 @@ function delUser(jurisdiction, user, next) {
 
 function listUsers(next) {
     var exec = require('child_process').exec,
-        other_opts = '-l',
-        command = ['dacspasswd', other_opts].join(' ');
-    exec(command, next);
+        fs = require('fs'),
+        other_opts = '-l';
+    async.waterfall([
+        function readDirectory(cb) {
+            fs.readdir(process.env.DACS + '/federations/' + process.env.FEDERATION, cb);
+        },
+        function filesToStats(files, cb) {
+            files = files.map(function (v) {
+                return process.env.DACS + '/federations/'  + process.env.FEDERATION + '/' + v;
+            });
+            async.filter(files, function (file, callback) {
+                fs.stat(file, function (err, stats) {
+                    if (err) {
+                        callback(false);
+                    } else {
+                        callback(stats.isDirectory());
+                    }
+                });
+            }, function (results) {
+                cb(null, results);
+            });
+        },
+        function statsToOutputs(dirs, cb) {
+            // Get last item of path.
+            dirs = _.map(dirs, function (val) {
+                return val.split('/').pop();
+            });
+            var pair = _.map(dirs, function (dir) {
+                return [dir, ['dacspasswd', '-uj ' + dir, , other_opts].join(' ')];
+            });
+            async.map(pair, function (pair, callback) {
+                exec(pair[1], function (err, out) {
+                    // The last item in the `out` is empty.
+                    var split = out.split('\n');
+                    split.pop();
+                    callback(err, [pair[0], split]);
+                });
+            }, cb);
+        }
+    ], next);
 }
 
 function addRole(jurisdiction, user, role, next) {
@@ -170,5 +207,8 @@ module.exports = {
     getRoles:     getRoles,
     hasRole:      hasRole,
     bakeCookie:   bakeCookie,
-    unbakeCookie: unbakeCookie
+    unbakeCookie: unbakeCookie,
+    listUsers:    listUsers,
+    addUser:      addUser,
+    delUser:      delUser,
 };

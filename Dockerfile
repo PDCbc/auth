@@ -3,18 +3,18 @@ FROM ubuntu
 # Configure these based on your config.
 # Main port for user interactions. Can be exposed.
 ENV MAINPORT 8080
-# Private Control Plane port. Avoid exposing this.
+EXPOSE 8080
+# Private Control Plane port. Avoid exposing this publicly.
 ENV CONTROLPORT 8081
+EXPOSE 8081
 
 ENV FEDERATION pdc.dev
 ENV JURISDICTION TEST
 ENV DACS /etc/dacs
 ENV KEYFILE $DACS/federations/$FEDERATION/federation_keyfile
 
-RUN apt-get update
-
 # Install DACS
-RUN apt-get install -y dacs
+RUN apt-get update && apt-get install -y dacs
 
 # Setup DACS
 ADD config /etc/dacs
@@ -22,7 +22,7 @@ VOLUME /etc/dacs
 
 # Build the federation keys if necessary.
 # TODO: Should we store the key seperately?
-RUN if [ ! -f "$KEYFILE" ]; then echo "Creating Key..." && dacskey -uj $JURISDICTION -v $KEYFILE; fi
+RUN dacskey -uj $JURISDICTION -v $KEYFILE
 
 # Setup Node
 RUN apt-get install -y curl
@@ -34,4 +34,4 @@ ADD api /api
 WORKDIR /api
 RUN npm install
 
-CMD npm start
+# CMD npm start

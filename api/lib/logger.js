@@ -16,5 +16,8 @@ module.exports = {
     },
     success: function success(text) {
         console.log(colors.green(text));
+    },
+    dir: function dir(text) {
+        console.dir(text);
     }
 };

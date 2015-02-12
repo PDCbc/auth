@@ -30,8 +30,10 @@ function routes(next, data) {
                     auth.bakeCookie(user, data.roles, ip, cb);
                 }],
             }, function complete(err, results) {
+                console.log(results);
                 // Something failed.
                 if (err) {
+                    logger.error(err);
                     // Clients may not necessarily want HTML.
                     res.status(401).format({
                         json: function () {
@@ -40,20 +42,19 @@ function routes(next, data) {
                         },
                         html: function () {
                             // Send back where they came from.
-                            res.render('login', data);
+                            res.render('login', results);
                         }
                     });
                 // All is fine.
                 } else {
                     res.format({
                         json: function () {
-                            res.json(data.cookie);
+                            res.json(results.cookie);
                         },
                         html: function () {
-                            req.signedCookie.auth = data.cookie;
                             // TODO: Is this enough? Should we include it
                             // some other way?
-                            res.redirect(from);
+                            res.send(results.cookie);
                         }
                     });
                 }
@@ -77,7 +78,7 @@ function routes(next, data) {
             var from = req.header('Referer') || '/',
                 user = req.body.user,
                 juri = req.body.juri,
-                pass = req.body.password;
+                pass = req.body.pass;
             auth.addUser(juri, user, pass, function (err) {
                 if (err) { res.status(500).send(); logger.dir(err); }
                 else     { res.redirect(from); }

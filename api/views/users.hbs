@@ -5,7 +5,12 @@
         <div class="row">
             <!-- User List -->
             <!-- TODO: Format -->
-            <pre>{{users}}</pre>
+            {{#each juri}}
+                <p>{{this.[0]}}</p>
+                {{#each this.[1]}}
+                    <pre>{{this}}</pre>
+                {{/each}}
+            {{/each}}
 
             <!-- User Add -->
             <form method="POST" role="form" class="form-horizontal">

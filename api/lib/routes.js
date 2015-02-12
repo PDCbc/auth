@@ -66,11 +66,10 @@ function routes(next, data) {
     userRouter.use(auth.hasRole('admin'));
     userRouter.route('/')
         .get(function (req, res) {
-            auth.listUsers(function (err, users) {
-                console.log(users);
+            auth.listUsers(function (err, juri) {
                 if (err) { res.send(); logger.dir(err); }
                 else     {
-                    res.render('users', { users: users });
+                    res.render('users', { juri: juri });
                 }
             });
         })

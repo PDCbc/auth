@@ -8,7 +8,17 @@
             {{#each juri}}
                 <h3>{{this.[0]}}</h3>
                 {{#each this.[1]}}
-                    <pre>{{this}}</pre>
+                    <div>
+                        <span class="lead">{{this}}</span>
+                        <form method="POST" action="/users?_method=PUT">
+
+                        </form>
+                        <form method="POST" action="/users?_method=DELETE">
+                            <input type="hidden" name="user" value="{{this}}">
+                            <input type="hidden" name="juri" value="{{../[0]}}">
+                            <input type="submit" class="btn btn-xs btn-danger" value="Delete User">
+                        </form>
+                    </div>
                 {{/each}}
             {{/each}}
 

@@ -21,8 +21,9 @@ ADD config /etc/dacs
 VOLUME /etc/dacs
 
 # Build the federation keys if necessary.
-# TODO: Should we store the key seperately?
-RUN dacskey -uj $JURISDICTION -v $KEYFILE
+# dacskey -uj $JURISDICTION -v $KEYFILE
+# dacspasswd -uj TEST -p foo -a foo
+# npm start
 
 # Setup Node
 RUN apt-get install -y curl

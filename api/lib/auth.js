@@ -16,7 +16,6 @@ function addUser(jurisdiction, user, password, next) {
         pass_opts = '-p ' + password,
         other_opts = '-a ' + user,
         command = ['dacspasswd', juri_opts, pass_opts, other_opts].join(' ');
-    console.log(command);
     exec(command, function finish(err, stdout, stderr) {
         if (err !== null) {
             // Status code is not 0.
@@ -88,7 +87,10 @@ function listUsers(next) {
                 });
             }, cb);
         }
-    ], next);
+    ], function (err, data) {
+        console.log(data);
+        next(err, data);
+    });
 }
 
 function addRole(jurisdiction, user, role, next) {
@@ -144,6 +146,32 @@ function bakeCookie(user, roles, ip, next) {
     });
 }
 
+function parse(data) {
+    // Example:
+    // federation="PDC"
+    // jurisdiction="TEST"
+    // username="foo"
+    // identity="PDC::TEST:foo"
+    // concise_identity='{u="PDC::TEST:foo",ip="10.0.2.2",e="1424155577"}'
+    // ip_address="10.0.2.2"
+    // roles=""
+    // expires_secs="1424155577" (Tue Feb 17 06:46:17 2015 UTC)
+    // auth_style="generated"
+    // valid_for="acs"
+    // version="1.4"
+    var byLine = data.split('\n');
+    var user = {};
+    _.each(byLine, function (line) {
+        var split = line.split('='),
+            key = split[0],
+            val;
+        split.pop(); // Dumps the first "
+        var upTo = split.substring(0, split.indexOf('"'));
+        user[key] = val;
+    });
+    return user;
+}
+
 /**
 * Unbakes a cookie and gives the unwrapped information. This uses `dacscookie`.
 * @param {String}   cookie The cookie to unbake.
@@ -161,7 +189,7 @@ function unbakeCookie(cookie, next) {
         next(null, data);
     });
     dacscookie.stderr('data', function respond(data) {
-        next(data, null);
+        next(parse(data), null);
     });
 }
 
@@ -193,13 +221,18 @@ function getRoles(user, next) {
  * @return {Function}  next A middleware, signature (Error, Boolean).
  */
 function hasRole(role) {
-    return function (req, res, next) {
-        getRoles(req.session.user, function check(err, roles) {
-            if (roles.indexOf(role) == -1) {
-                next(err, false);
-            } else {
-                next(err, true);
-            }
+    return function roleCheck(req, res, next) {
+        console.log("Cookie: " + req.cookie);
+        unbakeCookie(req.cookie, function (err, data) {
+            console.log("Unbaked: " + data);
+            getRoles(data.user, function check(err, roles) {
+                if (roles.indexOf(role) == -1) {
+                    logger.error(err || 'Role ' + role + ' not found.');
+                    res.redirect('/auth/login?message="Role ' + role + ' not found"');
+                } else {
+                    next();
+                }
+            });
         });
     };
 }

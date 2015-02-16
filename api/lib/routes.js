@@ -4,6 +4,7 @@ var async = require('async'),
     logger = require('./logger');
 
 var express = require('express'),
+    methodOverride = require('method-override'),
     auth    = require('./auth');
 
 /**
@@ -24,7 +25,9 @@ function routes(next, data) {
                 from = req.header('Referer') || '/',
                 ip   = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             async.auto({
-                check: _.partial(auth.checkDetails, juri, user, pass),
+                check: function (cb) {
+                    auth.checkDetails(juri, user, pass, cb);
+                },
                 roles: ['check', _.partial(auth.getRoles, user)],
                 cookie: ['check', 'roles', function (cb, data) {
                     auth.bakeCookie(user, data.roles, ip, cb);
@@ -42,7 +45,7 @@ function routes(next, data) {
                         },
                         html: function () {
                             // Send back where they came from.
-                            res.render('login', results);
+                            res.redirect('/auth/login?message="Invalid credentials."');
                         }
                     });
                 // All is fine.
@@ -54,17 +57,26 @@ function routes(next, data) {
                         html: function () {
                             // TODO: Is this enough? Should we include it
                             // some other way?
+                            req.cookie = results.cookie;
                             res.send(results.cookie);
                         }
                     });
                 }
             });
         });
+    authRouter.post('/verify', function (req, res) {
+        var bakedCookie = req.body.bakedCookie;
+        auth.unbakeCookie(bakedCookie, function (err, unbaked) {
+            if (err) { res.status(500); }
+            else     { res.status(200).json(unbaked); }
+        })
+    });
     // TODO: Add an auth check route.
 
 
     var userRouter = new express.Router();
     userRouter.use(auth.hasRole('admin'));
+    userRouter.use(methodOverride('_method'));
     userRouter.route('/')
         .get(function (req, res) {
             auth.listUsers(function (err, juri) {
@@ -87,9 +99,9 @@ function routes(next, data) {
         .delete(function (req, res) {
             var from = req.header('Referer') || '/',
                 user = req.body.user,
-                juri = req.body.jurisdiction;
+                juri = req.body.juri;
             auth.delUser(juri, user, function (err) {
-                if (err) { res.status(500).send(); }
+                if (err) { res.status(500).send(); logger.dir(err);}
                 else     { res.redirect(from); }
             });
         });
@@ -97,9 +109,6 @@ function routes(next, data) {
     var roleRouter = new express.Router();
     roleRouter.use(auth.hasRole('admin'));
     roleRouter.route('/')
-        .get(function (req, res) {
-            res.render('roles', {});
-        })
         .post(function (req, res) {
             var from = req.header('Referer') || '/',
                 user = req.body.user,
@@ -120,15 +129,6 @@ function routes(next, data) {
                 else     { res.status(200).redirect(from); }
             });
         });
-
-    var verifyRouter = new express.Router();
-    verifyRouter.post('/verify', function (req, res) {
-        var bakedCookie = req.body.bakedCookie;
-        auth.unbakeCookie(bakedCookie, function (err, unbaked) {
-            if (err) { res.status(500); }
-            else     { res.status(200).json(unbaked); }
-        })
-    });
 
     var mainRouter = data.httpd.main;
     mainRouter.use('/auth', authRouter);

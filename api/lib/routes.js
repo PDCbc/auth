@@ -57,7 +57,7 @@ function routes(next, data) {
                         html: function () {
                             // TODO: Is this enough? Should we include it
                             // some other way?
-                            req.cookie = results.cookie;
+                            req.session.baked = results.cookie;
                             res.send(results.cookie);
                         }
                     });

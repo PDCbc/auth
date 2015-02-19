@@ -159,15 +159,13 @@ function parse(data) {
     // auth_style="generated"
     // valid_for="acs"
     // version="1.4"
-    var byLine = data.split('\n');
+    var byLine = data.trim().split('\n');
     var user = {};
     _.each(byLine, function (line) {
         var split = line.split('='),
-            key = split[0],
-            val;
-        split.pop(); // Dumps the first "
-        var upTo = split.substring(0, split.indexOf('"'));
-        user[key] = val;
+            key = split.pop();
+        var upTo = split.pop().substring(1, split.indexOf('"'));
+        user[key] = upTo;
     });
     return user;
 }
@@ -180,16 +178,16 @@ function parse(data) {
 function unbakeCookie(cookie, next) {
     // NOTE: This is much different than `exec`.
     var spawn = require('child_process').spawn,
-        fed_opts = ['-u ', process.env.FEDERATION, '-decrypt'],
+        fed_opts = ['-u', process.env.FEDERATION, '-decrypt'],
         // TODO: Check IP.
         command = 'dacscookie';
     var dacscookie = spawn(command, _.flatten(fed_opts));
     dacscookie.stdin.write(cookie);
-    dacscookie.stdout('data', function respond(data) {
-        next(null, data);
+    dacscookie.stdout.on('data', function respond(data) {
+        next(null, parse(String(data)));
     });
-    dacscookie.stderr('data', function respond(data) {
-        next(parse(data), null);
+    dacscookie.stderr.on('data', function respond(data) {
+        next(data, null);
     });
 }
 
@@ -222,8 +220,7 @@ function getRoles(user, next) {
  */
 function hasRole(role) {
     return function roleCheck(req, res, next) {
-        console.log("Cookie: " + req.cookie);
-        unbakeCookie(req.cookie, function (err, data) {
+        unbakeCookie(req.session.baked, function (err, data) {
             console.log("Unbaked: " + data);
             getRoles(data.user, function check(err, roles) {
                 if (roles.indexOf(role) == -1) {

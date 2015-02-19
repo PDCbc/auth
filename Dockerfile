@@ -12,6 +12,8 @@ ENV FEDERATION pdc.dev
 ENV JURISDICTION TEST
 ENV DACS /etc/dacs
 ENV KEYFILE $DACS/federations/$FEDERATION/federation_keyfile
+# TODO: Should this be jurisdiction specific?
+ENV ROLEFILE $DACS/federations/$FEDERATION/roles
 
 # Install DACS
 RUN apt-get update && apt-get install -y dacs
@@ -19,11 +21,6 @@ RUN apt-get update && apt-get install -y dacs
 # Setup DACS
 ADD config /etc/dacs
 VOLUME /etc/dacs
-
-# Build the federation keys if necessary.
-# dacskey -uj $JURISDICTION -v $KEYFILE
-# dacspasswd -uj TEST -p foo -a foo
-# npm start
 
 # Setup Node
 RUN apt-get install -y curl
@@ -36,3 +33,7 @@ WORKDIR /api
 RUN npm install
 
 # CMD npm start
+
+
+# Init the container.
+# dacskey -uj $JURISDICTION -v $KEYFILE && dacspasswd -uj TEST -p foo -a foo && echo "foo:admin" > $ROLEFILE && npm start

@@ -1,6 +1,7 @@
 'use strict';
 var async = require('async'),
     _ = require('lodash'),
+    fs = require('fs'),
     logger = require('./logger');
 
 /**
@@ -78,14 +79,16 @@ function listUsers(next) {
             var pair = _.map(dirs, function (dir) {
                 return [dir, ['dacspasswd', '-uj ' + dir, , other_opts].join(' ')];
             });
-            async.map(pair, function (pair, callback) {
+            var users = {};
+            async.each(pair, function (pair, callback) {
                 exec(pair[1], function (err, out) {
                     // The last item in the `out` is empty.
                     var split = out.split('\n');
                     split.pop();
-                    callback(err, [pair[0], split]);
+                    users[pair[0]] = split;
+                    callback(err);
                 });
-            }, cb);
+            }, function (err) { cb(err, users); });
         }
     ], function (err, data) {
         console.log(data);
@@ -94,10 +97,49 @@ function listUsers(next) {
 }
 
 function addRole(jurisdiction, user, role, next) {
-    logger.error("addRole Not implemented yet!");
+    // Need to do some file manips.
+    // http://www.hoverbear.org/2014/11/17/first-look-at-dacs/#dacsroles
+    // TODO: Currently jurisdictions aren't handled really.
+    readRoles(function (err, users) {
+        users[user].push(role);
+        writeRoles(users, next);
+    });
 }
 function delRole(jurisdiction, user, role, next) {
-    logger.error("delRole Not implemented yet!");
+    // Need to do some file manips.
+    // http://www.hoverbear.org/2014/11/17/first-look-at-dacs/#dacsroles
+    // TODO: Currently jurisdictions aren't handled really.
+    readRoles(function (err, users) {
+        var index = users[user].indexOf(role);
+        users[user].split(index, 1);
+        writeRoles(users, next);
+    });
+}
+
+function readRoles(next) {
+    fs.readFile(process.env.ROLEFILE, {encoding: 'utf8'}, function (err, data) {
+        if (!err && data) {
+            var users = {};
+            data.split('\n').each(function (v) {
+                var split = data.split(':');
+                var roles = split[1].split(',');
+                users[split[0]] = roles;
+            });
+            next(null, users);
+        } else {
+            next(err, null);
+        }
+    });
+}
+
+function writeRoles(users, next) {
+    var out = "";
+    users.each(function (v) {
+        out = out.concat(v[0] + ':' + v[1].join(','));
+    });
+    fs.writeFile(process.env.ROLEFILE, out, {encoding: 'utf8'}, function (err) {
+        next(err);
+    });
 }
 
 /**
@@ -138,9 +180,11 @@ function bakeCookie(user, roles, ip, next) {
         name_opts = '-user ' + user,
         command = ['dacscookie', fed_opts, ip_opts, name_opts].join(' ');
     // Roles aren't always included. (Some users are role-less)
-    if (role_opts) {
-        role_opts = command.concat(role_opts);
+    console.log(roles);
+    if (roles) {
+        command = command.concat(' ' + role_opts);
     }
+    console.log(command);
     exec(command, function pass(err, stdout, stderr) {
         return next(err, stdout);
     });
@@ -163,8 +207,9 @@ function parse(data) {
     var user = {};
     _.each(byLine, function (line) {
         var split = line.split('='),
-            key = split.pop();
-        var upTo = split.pop().substring(1, split.indexOf('"'));
+            key = split[0];
+        // TODO: This isn't ideal! We need to clean this!
+        var upTo = split[1].substring(1, split[1].length - 1);
         user[key] = upTo;
     });
     return user;
@@ -200,11 +245,12 @@ function unbakeCookie(cookie, next) {
 function getRoles(user, next) {
     var exec = require('child_process').exec,
         module_opts = '-r roles',
-        vfs_opts = '-vfs "[roles]dacs-kwv-fs:/etc/dacs/federations/roles"',
+        vfs_opts = '-vfs "[roles]dacs-kwv-fs:' + process.env.ROLEFILE + '"',
         login_opts = '-u ' + user,
         command = ['dacsauth', module_opts, vfs_opts, login_opts].join(' ');
     exec(command, function parse(err, stdout, stderr) {
         if (err) {
+            console.log(stdout);
             // The status code is not 0.
             next(err, stdout.trim().split(','));
         } else {
@@ -221,8 +267,10 @@ function getRoles(user, next) {
 function hasRole(role) {
     return function roleCheck(req, res, next) {
         unbakeCookie(req.session.baked, function (err, data) {
-            console.log("Unbaked: " + data);
-            getRoles(data.user, function check(err, roles) {
+            console.log("Unbaked: " + require('util').inspect(data));
+            getRoles(data.username, function check(err, roles) {
+                console.log("ROLES");
+                console.log(roles);
                 if (roles.indexOf(role) == -1) {
                     logger.error(err || 'Role ' + role + ' not found.');
                     res.redirect('/auth/login?message="Role ' + role + ' not found"');

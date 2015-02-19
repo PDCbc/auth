@@ -112,7 +112,7 @@ function routes(next, data) {
         .post(function (req, res) {
             var from = req.header('Referer') || '/',
                 user = req.body.user,
-                juri = req.body.jurisdiction,
+                juri = req.body.juri,
                 role = req.body.role;
             auth.addRole(juri, user, role, function (err) {
                 if (err) { res.status(500); }
@@ -122,7 +122,7 @@ function routes(next, data) {
         .delete(function (req, res) {
             var from = req.header('Referer') || '/',
                 user = req.body.user,
-                juri = req.body.jurisdiction,
+                juri = req.body.juri,
                 role = req.body.role;
             auth.delRole(juri, user, role, function (err) {
                 if (err) { res.status(500); }

@@ -10,8 +10,10 @@
                 {{#each this.[1]}}
                     <div>
                         <span class="lead">{{this}}</span>
-                        <form method="POST" action="/users?_method=PUT">
-
+                        <form method="POST" action="/roles">
+                            <input type="hidden" name="user" value="{{this}}">
+                            <input type="hidden" name="juri" value="{{../[0]}}">
+                            <input type="text" name="role">
                         </form>
                         <form method="POST" action="/users?_method=DELETE">
                             <input type="hidden" name="user" value="{{this}}">

@@ -77,16 +77,25 @@ function listUsers(next) {
                 return val.split('/').pop();
             });
             var pair = _.map(dirs, function (dir) {
-                return [dir, ['dacspasswd', '-uj ' + dir, , other_opts].join(' ')];
+                return [dir, ['dacspasswd', '-uj ' + dir, other_opts].join(' ')];
             });
             var users = {};
             async.each(pair, function (pair, callback) {
                 exec(pair[1], function (err, out) {
                     // The last item in the `out` is empty.
-                    var split = out.split('\n');
-                    split.pop();
-                    users[pair[0]] = split;
-                    callback(err);
+                    var split = out.split('\n'); // This are the usernames.
+                    split.pop(); // Gets the last `''` string.
+                    var with_roles = async.map(split,
+                        function (v, back) {
+                            getRoles(v, function (err, roles) {
+                                back(err, {name: v, roles: roles});
+                            });
+                        },
+                        function (err, with_roles) {
+                            console.log(with_roles);
+                            users[pair[0]] = with_roles;
+                            callback(err);
+                        });
                 });
             }, function (err) { cb(err, users); });
         }
@@ -221,6 +230,7 @@ function parse(data) {
 * @param {Function} next   The callback, signature (Error, String).
 */
 function unbakeCookie(cookie, next) {
+    if (cookie === undefined) { return next('Cookie was undefined.'); }
     // NOTE: This is much different than `exec`.
     var spawn = require('child_process').spawn,
         fed_opts = ['-u', process.env.FEDERATION, '-decrypt'],
@@ -267,17 +277,22 @@ function getRoles(user, next) {
 function hasRole(role) {
     return function roleCheck(req, res, next) {
         unbakeCookie(req.session.baked, function (err, data) {
-            console.log("Unbaked: " + require('util').inspect(data));
-            getRoles(data.username, function check(err, roles) {
-                console.log("ROLES");
-                console.log(roles);
-                if (roles.indexOf(role) == -1) {
-                    logger.error(err || 'Role ' + role + ' not found.');
-                    res.redirect('/auth/login?message="Role ' + role + ' not found"');
-                } else {
-                    next();
-                }
-            });
+            if (!err && data) {
+                console.log("Unbaked: " + require('util').inspect(data));
+                getRoles(data.username, function check(err, roles) {
+                    console.log("ROLES");
+                    console.log(roles);
+                    if (roles.indexOf(role) == -1) {
+                        logger.error(err || 'Role ' + role + ' not found.');
+                        res.redirect('/auth/login?message="Role ' + role + ' not found"');
+                    } else {
+                        next();
+                    }
+                });
+            } else {
+                logger.error(err || 'Cookie was not baked properly');
+                res.redirect('/auth/login?message="Role ' + role + ' not found"');
+            }
         });
     };
 }

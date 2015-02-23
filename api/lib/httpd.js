@@ -15,7 +15,8 @@ function httpd(next, data) {
         server.set('view engine', 'hbs');
         // Page Routes
         require('hbs').registerPartials(__dirname + '/../views/partials');
-        require('hbs').registerHelper('json', function(data) {
+        // Print out JSON.
+        require('hbs').registerHelper('json', function (data) {
             return JSON.stringify(data);
         });
         // Middleware (https://github.com/senchalabs/connect#middleware)

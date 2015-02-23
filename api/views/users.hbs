@@ -6,17 +6,18 @@
             <!-- User List -->
             <!-- TODO: Format -->
             {{#each juri}}
-                <h3>{{this.[0]}}</h3>
-                {{#each this.[1]}}
+                <h3>{{@key}}</h3>
+                <code>{{json this}}</code>
+                {{#each this}}
                     <div>
-                        <span class="lead">{{this}}</span>
+                        <span class="lead">{{this.name}}</span>
                         <form method="POST" action="/roles">
-                            <input type="hidden" name="user" value="{{this}}">
+                            <input type="hidden" name="user" value="{{this.name}}">
                             <input type="hidden" name="juri" value="{{../[0]}}">
-                            <input type="text" name="role">
+                            <input type="text" name="roles" value="{{this.roles}}">
                         </form>
                         <form method="POST" action="/users?_method=DELETE">
-                            <input type="hidden" name="user" value="{{this}}">
+                            <input type="hidden" name="user" value="{{@key}}">
                             <input type="hidden" name="juri" value="{{../[0]}}">
                             <input type="submit" class="btn btn-xs btn-danger" value="Delete User">
                         </form>

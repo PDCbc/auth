@@ -33,7 +33,7 @@ function routes(next, data) {
                     auth.bakeCookie(user, data.roles, ip, cb);
                 }],
             }, function complete(err, results) {
-                console.log(results);
+                // console.log(results);
                 // Something failed.
                 if (err) {
                     logger.error(err);
@@ -113,22 +113,22 @@ function routes(next, data) {
             var from = req.header('Referer') || '/',
                 user = req.body.user,
                 juri = req.body.juri,
-                role = req.body.role;
-            auth.addRole(juri, user, role, function (err) {
-                if (err) { res.status(500); }
-                else     { res.status(200).redirect(from); }
-            });
-        })
-        .delete(function (req, res) {
-            var from = req.header('Referer') || '/',
-                user = req.body.user,
-                juri = req.body.juri,
-                role = req.body.role;
-            auth.delRole(juri, user, role, function (err) {
+                roles = req.body.roles.split(','); // TODO: Security Check?
+            auth.setRoles(juri, user, roles, function (err) {
                 if (err) { res.status(500); }
                 else     { res.status(200).redirect(from); }
             });
         });
+        // .delete(function (req, res) {
+        //     var from = req.header('Referer') || '/',
+        //         user = req.body.user,
+        //         juri = req.body.juri,
+        //         role = req.body.role;
+        //     auth.delRole(juri, user, role, function (err) {
+        //         if (err) { res.status(500); }
+        //         else     { res.status(200).redirect(from); }
+        //     });
+        // });
 
     var mainRouter = data.httpd.main;
     mainRouter.use('/auth', authRouter);

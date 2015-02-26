@@ -15,6 +15,7 @@
                             <input type="hidden" name="user" value="{{this.name}}">
                             <input type="hidden" name="juri" value="{{../[0]}}">
                             <input type="text" name="roles" value="{{this.roles}}">
+                            <input type="submit" class="btn btn-xs btn-primary" value="Update Roles">
                         </form>
                         <form method="POST" action="/users?_method=DELETE">
                             <input type="hidden" name="user" value="{{@key}}">

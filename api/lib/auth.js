@@ -37,8 +37,10 @@ function delUser(jurisdiction, user, next) {
         juri_opts = '-uj ' + jurisdiction,
         other_opts = '-d ' + user,
         command = ['dacspasswd', juri_opts, other_opts].join(' ');
+    // TODO: We should probably delete their roles?
     exec(command, function finish(err, stdout, stderr) {
         if (err !== null) {
+            console.error(stderr);
             // Status code is not 0.
             next(err, false);
         } else {

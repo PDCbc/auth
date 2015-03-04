@@ -258,12 +258,21 @@ function unbakeCookie(cookie, next) {
         // TODO: Check IP.
         command = 'dacscookie';
     var dacscookie = spawn(command, _.flatten(fed_opts));
-    dacscookie.stdin.write(cookie);
-    dacscookie.stdout.on('data', function respond(data) {
-        next(null, parse(String(data)));
+    dacscookie.stdin.write(cookie)
+    dacscookie.stdin.end();
+    var stdout = "", stderr = "";
+    dacscookie.stdout.on('data', function (data) {
+        stdout += data;
     });
-    dacscookie.stderr.on('data', function respond(data) {
-        next(data, null);
+    dacscookie.stderr.on('data', function (data) {
+        stderr += data;
+    });
+    dacscookie.on('exit', function (code, signal) {
+        if (code !== 0) {
+            next(String(stderr), null);
+        } else {
+            next(null, parse(String(stdout)));
+        }
     });
 }
 

@@ -16,14 +16,20 @@ function routes(next, data) {
     var authRouter = new express.Router();
     authRouter.route('/login')
         .get(function (req, res) {
-            res.render('login', {});
+            res.render('login', {
+                respond: "/"
+            });
         })
         .post(function (req, res) {
             var user = req.body.user,
                 pass = req.body.pass,
                 juri = req.body.juri,
-                from = req.header('Referer') || '/',
+                respond = req.body.respond,
                 ip   = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            if (!user || !pass || !juri || !respond || !ip) {
+                logger.log("Attempted to login without specifying all the details.");
+                return res.status(400).json({failure: true});
+            }
             async.auto({
                 check: function (cb) {
                     auth.checkDetails(juri, user, pass, cb);
@@ -55,24 +61,22 @@ function routes(next, data) {
                             res.json(results.cookie);
                         },
                         html: function () {
-                            // TODO: Is this enough? Should we include it
-                            // some other way?
                             req.session.baked = results.cookie;
-                            res.send(results.cookie);
+                            res.redirect(respond + '?cookie=' + results.cookie);
                         }
                     });
                 }
             });
         });
-    authRouter.post('/verify', function (req, res) {
+
+    var verifyRouter = new express.Router();
+    verifyRouter.post('/', function (req, res) {
         var bakedCookie = req.body.bakedCookie;
         auth.unbakeCookie(bakedCookie, function (err, unbaked) {
-            if (err) { res.status(500); }
+            if (err) { console.log("Error"); res.status(500).send(); }
             else     { res.status(200).json(unbaked); }
-        })
+        });
     });
-    // TODO: Add an auth check route.
-
 
     var userRouter = new express.Router();
     userRouter.use(auth.hasRole('admin'));
@@ -80,7 +84,7 @@ function routes(next, data) {
     userRouter.route('/')
         .get(function (req, res) {
             auth.listUsers(function (err, juri) {
-                if (err) { res.send(); logger.dir(err); }
+                if (err) { res.status(500).send(); logger.dir(err); }
                 else     {
                     res.render('users', { juri: juri });
                 }
@@ -136,6 +140,7 @@ function routes(next, data) {
     controlRouter.use('/users', userRouter);
     controlRouter.use('/roles', roleRouter);
     controlRouter.use('/auth', authRouter);
+    controlRouter.use('/verify', verifyRouter);
 
     next(null);
 }

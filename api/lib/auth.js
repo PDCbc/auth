@@ -26,6 +26,52 @@ function addUser(jurisdiction, user, password, next) {
         }
     });
 }
+
+/**
+ * Sets the private data for the member.
+ * @param {String}   jurisdiction The jurisdiction of the user.
+ * @param {String}   user         The user's name.
+ * @param {String}   data         The data to set, as a string. You can do `JSON.stringify()`
+ * @param {Function} next         The callback.
+ */
+function setPrivateData(jurisdiction, user, data, next) {
+    var exec = require('child_process').exec,
+        juri_opts = '-uj ' + jurisdiction,
+        private_opts = "-pds '" + data + "'", // Quote types matter here...
+        command = ['dacspasswd', juri_opts, private_opts, user].join(' ');
+    console.log(command);
+    exec(command, function finish(err, stdout, stderr) {
+        if (err !== null) {
+            // Status code is not 0.
+            next(err, false);
+        } else {
+            next(err, true);
+        }
+    });
+}
+
+/**
+ * Gets the private data for the member.
+ * @param {String}   jurisdiction The jurisdiction of the user.
+ * @param {String}   user         The user's name.
+ * @param {Function} next         The callback.
+ */
+function getPrivateData(jurisdiction, user, next) {
+    var exec = require('child_process').exec,
+        juri_opts = '-uj ' + jurisdiction,
+        private_opts = "-pdg",
+        command = ['dacspasswd', juri_opts, private_opts, user].join(' ');
+    console.log(command);
+    exec(command, function finish(err, stdout, stderr) {
+        if (err !== null) {
+            // Status code is not 0.
+            next(err, stdout);
+        } else {
+            next(err, stdout);
+        }
+    });
+}
+
 /**
  * Removes a user from DACS.
  * @param {String}   jurisdiction The jurisdiction of the user.
@@ -49,6 +95,10 @@ function delUser(jurisdiction, user, next) {
     });
 }
 
+/**
+ * List all the users. Note: This is rather costly.
+ * @param {Function} next The callback.
+ */
 function listUsers(next) {
     var exec = require('child_process').exec,
         fs = require('fs'),
@@ -141,9 +191,9 @@ function readRoles(next) {
         if (!err && data) {
             var users = {};
             _.forIn(data.split('\n'), function (v) {
-                console.log("READ: --" + v + "--");
+                // console.log("READ: --" + v + "--");
                 if (v.length === 0) {
-                    console.log("SKIPPED");
+                    // console.log("SKIPPED");
                     return;
                 }
                 var split = v.split(':');
@@ -159,14 +209,14 @@ function readRoles(next) {
 
 function writeRoles(users, next) {
     var out = "";
-    console.log(JSON.stringify(users, null, 2));
+    // console.log(JSON.stringify(users, null, 2));
     _.forIn(users, function (v, k) {
-        console.log("USER: --" + k + "-- ROLES --" + v + "--");
+        // console.log("USER: --" + k + "-- ROLES --" + v + "--");
         out = out.concat(k + ':' + v.join(',') + '\n');
     });
-    console.log("START");
-    console.log(out);
-    console.log("END");
+    // console.log("START");
+    // console.log(out);
+    // console.log("END");
     fs.writeFile(process.env.ROLEFILE, out, {encoding: 'utf8'}, function (err) {
         next(err);
     });
@@ -216,7 +266,7 @@ function bakeCookie(user, roles, ip, next) {
     }
     // console.log(command);
     exec(command, function pass(err, stdout, stderr) {
-        return next(err, stdout);
+        return next(err, stdout.substring(0, stdout.length - 1));
     });
 }
 
@@ -258,7 +308,7 @@ function unbakeCookie(cookie, next) {
         // TODO: Check IP.
         command = 'dacscookie';
     var dacscookie = spawn(command, _.flatten(fed_opts));
-    dacscookie.stdin.write(cookie)
+    dacscookie.stdin.write(cookie);
     dacscookie.stdin.end();
     var stdout = "", stderr = "";
     dacscookie.stdout.on('data', function (data) {
@@ -290,11 +340,11 @@ function getRoles(user, next) {
         command = ['dacsauth', module_opts, vfs_opts, login_opts].join(' ');
     exec(command, function parse(err, stdout, stderr) {
         if (err) {
-            console.log(stdout);
+            // console.log(stdout);
             // The status code is not 0.
             next(err, stdout.trim().split(','));
         } else {
-            console.log("GETROLES --" + stdout.trim() + "--");
+            // console.log("GETROLES --" + stdout.trim() + "--");
             next(null, stdout.trim().split(','));
         }
     });
@@ -307,7 +357,16 @@ function getRoles(user, next) {
  */
 function hasRole(role) {
     return function roleCheck(req, res, next) {
-        unbakeCookie(req.session.baked, function (err, data) {
+        // TODO: This might need to be improved.
+        var session;
+        console.log(req.session);
+        if (req.session.baked) {
+            session = req.session.baked;
+        } else {
+            session = req.body.bakedCookie;
+        }
+        // End TODO
+        unbakeCookie(session, function (err, data) {
             if (!err && data) {
                 // console.log("Unbaked: " + require('util').inspect(data));
                 getRoles(data.username, function check(err, roles) {
@@ -339,4 +398,6 @@ module.exports = {
     listUsers:    listUsers,
     addUser:      addUser,
     delUser:      delUser,
+    getPrivateData: getPrivateData,
+    setPrivateData: setPrivateData,
 };

@@ -109,9 +109,35 @@ function routes(next, data) {
                 else     { res.redirect(from); }
             });
         });
+    userRouter.route('/data')
+        .get(function (req, res) {
+            var from = req.header('Referer') || '/',
+                user = req.query.user,
+                juri = req.query.juri;
+            console.log(req.body);
+            auth.getPrivateData(juri, user, function (err, data) {
+                if (err) { res.status(500).send(); logger.dir(err); }
+                else     { res.json(data); }
+            });
+        })
+        .post(function (req, res) {
+            var from = req.header('Referer') || '/',
+                user = req.body.user,
+                juri = req.body.juri,
+                data = req.body.data;
+            console.log(req.body);
+            auth.setPrivateData(juri, user, data, function (err) {
+                if (err) { res.status(500).send(); logger.dir(err); }
+                else     { res.redirect(from); }
+            });
+        });
+        // .delete(function (req, res) {
+        //
+        // });
 
     var roleRouter = new express.Router();
     roleRouter.use(auth.hasRole('admin'));
+    roleRouter.use(methodOverride('_method'));
     roleRouter.route('/')
         .post(function (req, res) {
             var from = req.header('Referer') || '/',
@@ -133,6 +159,7 @@ function routes(next, data) {
         //         else     { res.status(200).redirect(from); }
         //     });
         // });
+        //
 
     var mainRouter = data.httpd.main;
     mainRouter.use('/auth', authRouter);

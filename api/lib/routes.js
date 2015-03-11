@@ -26,6 +26,8 @@ function routes(next, data) {
                 juri = req.body.juri,
                 respond = req.body.respond,
                 ip   = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            // console.log(req.body);
+            // console.log(ip);
             if (!user || !pass || !juri || !respond || !ip) {
                 logger.log("Attempted to login without specifying all the details.");
                 return res.status(400).json({failure: true});
@@ -72,6 +74,7 @@ function routes(next, data) {
     var verifyRouter = new express.Router();
     verifyRouter.post('/', function (req, res) {
         var bakedCookie = req.body.bakedCookie;
+        // console.log("BAKED COOKIE IS " + require('util').inspect(bakedCookie));
         auth.unbakeCookie(bakedCookie, function (err, unbaked) {
             if (err) { console.log("Error"); res.status(500).send(); }
             else     { res.status(200).json(unbaked); }

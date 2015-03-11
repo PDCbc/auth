@@ -135,16 +135,17 @@ function listUsers(next) {
             async.each(pair, function (pair, callback) {
                 exec(pair[1], function (err, out) {
                     // The last item in the `out` is empty.
-                    var split = out.split('\n'); // This are the usernames.
+                    var split = out.split('\n'); // These are the usernames.
                     split.pop(); // Gets the last `''` string.
-                    var with_roles = async.map(split,
-                        function (v, back) {
+                    async.map(split, function (v, back) {
                             getRoles(v, function (err, roles) {
-                                back(err, {name: v, roles: roles});
+                                getPrivateData(pair[0], v, function (err, data) {
+                                    back(err, {name: v, roles: roles, data: data});
+                                });
                             });
                         },
-                        function (err, with_roles) {
-                            users[pair[0]] = with_roles;
+                        function (err, with_info) {
+                            users[pair[0]] = with_info;
                             callback(err);
                         });
                 });
@@ -246,6 +247,7 @@ function checkDetails(jurisdiction, user, pass, next) {
 
 /**
  * Bakes a cookie for the user and passes it along. This uses `dacscookie`.
+ * DACS is pretty inflexible and requires us to fetch private data instead of baking it.
  * @param {String}   user The username to bake the cookie for.
  * @param {String}   ip   The IP address the user is originating from.
  * @param {Function} next The callback, signature (Error, String).
@@ -290,6 +292,9 @@ function parse(data) {
             key = split[0];
         // TODO: This isn't ideal! We need to clean this!
         var upTo = split[1].substring(1, split[1].length - 1);
+        if (key == "roles") {
+            upTo = upTo.split(',');
+        }
         user[key] = upTo;
     });
     return user;
@@ -297,6 +302,7 @@ function parse(data) {
 
 /**
 * Unbakes a cookie and gives the unwrapped information. This uses `dacscookie`.
+* DACS is pretty inflexible and requires us to fetch private data instead of baking it.
 * @param {String}   cookie The cookie to unbake.
 * @param {Function} next   The callback, signature (Error, String).
 */
@@ -321,7 +327,11 @@ function unbakeCookie(cookie, next) {
         if (code !== 0) {
             next(String(stderr), null);
         } else {
-            next(null, parse(String(stdout)));
+            var user = parse(String(stdout));
+            getPrivateData(user.jurisdiction, user.username, function (err, out) {
+                user.privateData = out;
+                next(err, user);
+            });
         }
     });
 }

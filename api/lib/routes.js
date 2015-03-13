@@ -74,9 +74,15 @@ function routes(next, data) {
     var verifyRouter = new express.Router();
     verifyRouter.post('/', function (req, res) {
         var bakedCookie = req.body.bakedCookie;
-        // console.log("BAKED COOKIE IS " + require('util').inspect(bakedCookie));
+
+        console.log("BAKED COOKIE IS " + require('util').inspect(bakedCookie));
+
         auth.unbakeCookie(bakedCookie, function (err, unbaked) {
-            if (err) { console.log("Error"); res.status(500).send(); }
+            if (err)
+            {
+              logger.error(err);
+              console.log("Error: " + err); res.status(500).send();
+            }
             else     { res.status(200).json(unbaked); }
         });
     });

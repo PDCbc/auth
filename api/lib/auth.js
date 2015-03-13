@@ -308,6 +308,8 @@ function parse(data) {
 */
 function unbakeCookie(cookie, next) {
     if (cookie === undefined) { return next('Cookie was undefined.'); }
+
+    logger.warn("unbakeCookie - cookie: " + cookie);
     // NOTE: This is much different than `exec`.
     var spawn = require('child_process').spawn,
         fed_opts = ['-u', process.env.FEDERATION, '-decrypt'],
@@ -329,8 +331,26 @@ function unbakeCookie(cookie, next) {
         } else {
             var user = parse(String(stdout));
             getPrivateData(user.jurisdiction, user.username, function (err, out) {
-                user.privateData = out;
+              try
+              {
+                if(!out)
+                {
+                  next(null,user);
+                  logger.log('no out case');
+                  return;
+                }
+
+                logger.warn("out: " + out);
+                var privateData = JSON.parse(out);
+                user.clinic = privateData.clinic;
+                user.clinician = privateData.clinician;
                 next(err, user);
+              }
+              catch(error)
+              {
+                err="could not parse user information: " + error;
+                next(err, null);
+              }
             });
         }
     });
@@ -348,13 +368,16 @@ function getRoles(user, next) {
         vfs_opts = '-vfs "[roles]dacs-kwv-fs:' + process.env.ROLEFILE + '"',
         login_opts = '-u ' + user,
         command = ['dacsauth', module_opts, vfs_opts, login_opts].join(' ');
+        logger.warn('command: ' + command);
     exec(command, function parse(err, stdout, stderr) {
         if (err) {
             // console.log(stdout);
             // The status code is not 0.
+            logger.error('GetRoles ERROR: ' + err);
             next(err, stdout.trim().split(','));
         } else {
-            // console.log("GETROLES --" + stdout.trim() + "--");
+            console.log("GETROLES --" + stdout.trim() + "--");
+            console.log("GETROLES next: " + next);
             next(null, stdout.trim().split(','));
         }
     });
@@ -369,7 +392,9 @@ function hasRole(role) {
     return function roleCheck(req, res, next) {
         // TODO: This might need to be improved.
         var session;
+        console.log("session: ");
         console.log(req.session);
+
         if (req.session.baked) {
             session = req.session.baked;
         } else {
@@ -378,10 +403,17 @@ function hasRole(role) {
         // End TODO
         unbakeCookie(session, function (err, data) {
             if (!err && data) {
-                // console.log("Unbaked: " + require('util').inspect(data));
+
+                console.log("Unbaked: " + require('util').inspect(data));
+
                 getRoles(data.username, function check(err, roles) {
+
+                    logger.success('got roles: ' + roles);
+                    logger.warn('looking for: ' + role);
+
                     if (roles.indexOf(role) == -1) {
-                        logger.error(err || 'Role ' + role + ' not found.');
+                        logger.error('Has Roles ERROR: ' + err);
+                        logger.error('Role ' + role + ' not found.');
                         res.redirect('/auth/login?message="Role ' + role + ' not found"');
                     } else {
                         next();

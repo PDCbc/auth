@@ -9,25 +9,45 @@ var async = require('async'),
 */
 function environment(next) {
     if (!process.env.SECRET) {
-        // SECRET is used for cookies and sessions. Make sure to choose something password-y.
-        logger.warn('No $SECRET present. Generating a temporary random value.');
-        process.env.SECRET = require('crypto').randomBytes(256);
+      // SECRET is used for cookies and sessions. Make sure to choose something password-y.
+      logger.warn('No $SECRET present. Generating a temporary random value.');
+      process.env.SECRET = require('crypto').randomBytes(256);
     }
+    else
+    {
+      logger.success('$SECRET present - ' + process.env.SECRET);
+    }
+
     if (!process.env.MAINPORT) {
-        // PORT is what the application listens on for normal actions.
-        logger.warn('No $MAINPORT present. Choosing a sane default, 8080.');
-        process.env.MAINPORT = 8080;
+      // MAINPORT is what the application listens on for normal plane actions.
+      logger.warn('No $MAINPORT present. Choosing a sane default, 3005.');
+      process.env.MAINPORT = 3005;
     }
+    else
+    {
+      logger.success('$MAINPORT present - ' + process.env.MAINPORT);
+    }
+
     if (!process.env.CONTROLPORT) {
-        // PORT is what the application listens on for control plane actions.
-        logger.warn('No $CONTROLPORT present. Choosing a sane default, 8081.');
-        process.env.CONTROLPORT = 8081;
+      // CONTROLPORT is what the application listens on for control plane actions.
+      logger.warn('No $CONTROLPORT present. Choosing a sane default, 3006.');
+      process.env.CONTROLPORT = 3006;
     }
+    else
+    {
+      logger.success('$CONTROLPORT present - ' + process.env.CONTROLPORT);
+    }
+
     if (!process.env.FEDERATION) {
-        // PORT is what the application listens on.
-        logger.warn('No $FEDERATION present. Choosing a default: `pdc.dev`.');
-        process.env.FEDERATION = "pdc.dev";
+      // PORT is what the application listens on.
+      logger.warn('No $FEDERATION present. Choosing a default: `pdc.dev`.');
+      process.env.FEDERATION = "pdc.dev";
     }
+    else
+    {
+      logger.success('$FEDERATION present - ' + process.env.FEDERATION);
+    }
+
     next(null);
 }
 

@@ -6,7 +6,7 @@ export DACS=/etc/dacs
 export KEYFILE=$DACS/federations/$FEDERATION/federation_keyfile
 export ROLEFILE=$DACS/federations/$FEDERATION/roles
 
-cd /api
+cd /app
 
 npm install
 dacskey -uj $JURISDICTION -v $KEYFILE

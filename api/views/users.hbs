@@ -17,10 +17,13 @@
                             <input type="text" name="roles" value="{{this.roles}}">
                             <input type="submit" class="btn btn-xs btn-primary" value="Update Roles">
                         </form>
-                        <form method="POST" action="/users/data">
+                        <form method="POST" action="/users/data" onsubmit="return validateJSON()">
                             <input type="hidden" name="user" value="{{this.name}}">
                             <input type="hidden" name="juri" value="{{@key}}">
-                            <input type="text" name="data" value="{{this.data}}">
+                            <p id="placeErrorFeedback" style="display: none;">
+                              <code id="submitErrorFeedback"></code>
+                            </p>
+                            <input type="text" name="data" id="updJSON" value="{{this.data}}">
                             <input type="submit" class="btn btn-xs btn-primary" value="Update Private Data">
                         </form>
                         <form method="POST" action="/users?_method=DELETE">
@@ -72,5 +75,20 @@
             </form>
         </div> <!-- row -->
     </div> <!-- container -->
+    <script>
+
+      function validateJSON(){
+        try {
+          var text = document.getElementById("updJSON").value;
+          var isJSON = JSON.parse( text );
+          return true;
+        }
+        catch( err ){
+          document.getElementById("submitErrorFeedback").innerHTML = "Please use form { \"clinician\":\"cpsid\", \"clinic\":\"alphanumeric24\" }";
+          document.getElementById("placeErrorFeedback").style.display = "block";
+          return false;
+        }
+      }
+    </script>
 </body>
 </html>

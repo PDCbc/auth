@@ -1,0 +1,12 @@
+/*!
+ * Custom CSS to compliment bootstrap.css
+ * Make sure to list it in the headers
+ */
+
+body div div div input[type="text"]{
+ width: 400px;
+}
+
+body div div div div input[type="password"]{
+ width: 400px;
+}

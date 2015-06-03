@@ -21,7 +21,7 @@ RUN mkdir -p /etc/service/app/
 RUN ( \
       echo "#!/bin/bash"; \
       echo "#"; \
-      echo "set -e -o nounset"; \
+      echo "set -e -o nounset -x"; \
       echo ""; \
       echo ""; \
       echo "# If jurisdiction folder doesn't exist, then initialize DACS"; \
@@ -34,7 +34,6 @@ RUN ( \
       echo "    cp /app/federations/site.conf \${DACS_STOREDIR}/federations/"; \
       echo "    touch \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/roles"; \
       echo "    touch \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/federation_keyfile"; \
-      echo "    dacskey -uj \${DACS_JURISDICTION} -v \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/federation_keyfile"; \
       echo "  )||("; \
       echo "    ERROR: DACS initialization unsuccessful >&2"; \
       echo "  )"; \
@@ -50,9 +49,19 @@ RUN ( \
       echo "export FEDERATION=\${DACS_FEDERATION}"; \
       echo "export JURISDICTION=\${DACS_JURISDICTION}"; \
       echo "export ROLEFILE=\${DACS_ROLEFILE}"; \
+      echo "export KEYFILE=\${DACS_KEYFILE}"; \
       echo "export SECRET=\${NODE_SECRET}"; \
       echo "export DACS=\${DACS_STOREDIR}"; \
       echo "#"; \
+      echo ""; \
+      echo ""; \
+      echo "# Add a dummy user"; \
+      echo "#"; \
+      echo "/sbin/setuser app dacskey -uj \${DACS_JURISDICTION} -v \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/federation_keyfile"; \
+      echo "/sbin/setuser app dacspasswd -uj \${JURISDICTION} -p foo -a foo || echo 'Foo already exists!'"; \
+      echo "echo 'foo:admin' > \${ROLEFILE}"; \
+      echo ""; \
+      echo ""; \
       echo "cd /app/"; \
       echo "/sbin/setuser app npm start"; \
     )  \

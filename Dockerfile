@@ -44,7 +44,6 @@ RUN ( \
       echo ""; \
       echo "# Start service"; \
       echo "#"; \
-      echo "export BRANCH=\${BRANCH_AUTH}"; \
       echo "export CONTROLPORT=\${PORT_AUTH_C}"; \
       echo "export MAINPORT=\${PORT_AUTH_M}"; \
       echo "export DACS=\${DACS_STOREDIR}"; \

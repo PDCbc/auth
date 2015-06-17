@@ -24,7 +24,7 @@ RUN ( \
       echo "set -e -o nounset"; \
       echo ""; \
       echo ""; \
-      echo "# If jurisdiction folder doesn't exist, then initialize DACS"; \
+      echo "# Prepare DACS"; \
       echo "#"; \
       echo "if [ ! -d \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/\${DACS_JURISDICTION}/ ]"; \
       echo "then"; \
@@ -34,24 +34,24 @@ RUN ( \
       echo "    cp /app/federations/site.conf \${DACS_STOREDIR}/federations/"; \
       echo "    touch \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/roles"; \
       echo "    touch \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/federation_keyfile"; \
-      echo "    dacskey -uj \${DACS_JURISDICTION} -v \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/federation_keyfile"; \
       echo "  )||("; \
       echo "    ERROR: DACS initialization unsuccessful >&2"; \
       echo "  )"; \
       echo "fi"; \
       echo "chown -R app:app \${DACS_STOREDIR}/"; \
+      echo "/sbin/setuser app dacskey -uj \${DACS_JURISDICTION} -v \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/federation_keyfile"; \
       echo ""; \
       echo ""; \
       echo "# Start service"; \
       echo "#"; \
-      echo "export BRANCH=\${BRANCH_AUTH}"; \
       echo "export CONTROLPORT=\${PORT_AUTH_C}"; \
       echo "export MAINPORT=\${PORT_AUTH_M}"; \
+      echo "export DACS=\${DACS_STOREDIR}"; \
       echo "export FEDERATION=\${DACS_FEDERATION}"; \
       echo "export JURISDICTION=\${DACS_JURISDICTION}"; \
       echo "export ROLEFILE=\${DACS_ROLEFILE}"; \
+      echo "export KEYFILE=\${DACS_KEYFILE}"; \
       echo "export SECRET=\${NODE_SECRET}"; \
-      echo "export DACS=\${DACS_STOREDIR}"; \
       echo "#"; \
       echo "cd /app/"; \
       echo "/sbin/setuser app npm start"; \

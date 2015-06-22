@@ -39,7 +39,7 @@ export JURISDICTION=${2:-$DACS_JURISDICTION}
 
 # Remove user from DACS_ROLEFILE
 #
-if ( cat ${DACS_ROLEFILE} | grep -io ^${U_NAME}: )
+if ( cat ${DACS_ROLEFILE} | grep -qio ^${U_NAME}: )
 then
 	sed -i /${U_NAME}:/d ${DACS_ROLEFILE}
 else

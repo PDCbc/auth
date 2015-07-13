@@ -1,3 +1,5 @@
+[deployment]: 
+
 # Authentication Component Design Specification
 
 ## Document Purpose
@@ -55,10 +57,22 @@ The system shall provide two roles:
 ### User Management and Restrictions
 
 * The system shall allow *only* system administrators to view, modify, delete, update, etc... the authentication information for users.
+* The system shall provide a simple user interface for system administrators to manage users and their roles.   
  
 ### User Authentication
 
 * The system shall provide a means of authenticating users against a list of allowed users.
 * The system shall be able to verify that a previous authentication event occurred given an token.
 * The system shall be able to associated roles with specific users and return the role information upon request 
+
+## Summary of System
+
+This authentication component (referred to as the auth component) is to be an HTTPS interface between the rest of the PDC system, and the DACS DSS user management system ([https://dacs.dss.ca/](https://dacs.dss.ca/)). The persistence and management of user information is handled by a DACS DSS programming running on the same host as this authentication component. 
+  
+The auth component consists of two web servers running on the same NodeJS process, but listening on different ports. One server (referred to as "control", on port 3006) provides a login and for system administrators to manage users. The other provides access to a REST API for authentication (referred to as "main" on port 3005).
+ 
+The following diagram gives a high level view of the auth component deployment. 
+
+![Auth Deployment](/design/models/images/current/AuthDeployment.png)
+
 

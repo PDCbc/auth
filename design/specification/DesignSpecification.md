@@ -1,5 +1,3 @@
-[deployment]: 
-
 # Authentication Component Design Specification
 
 ## Document Purpose
@@ -71,8 +69,28 @@ This authentication component (referred to as the auth component) is to be an HT
   
 The auth component consists of two web servers running on the same NodeJS process, but listening on different ports. One server (referred to as "control", on port 3006) provides a login and for system administrators to manage users. The other provides access to a REST API for authentication (referred to as "main" on port 3005).
  
-The following diagram gives a high level view of the auth component deployment. 
+The following diagram gives a high level view of the auth component deployment. Note that communication with the DACS component must occur via calls to the unix command line. All networked communication in the diagram is HTTPS (unless otherwise specified). 
 
-![Auth Deployment](/design/models/images/current/AuthDeployment.png)
+![Auth Deployment](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/AuthDeployment.png)
 
+### Code Structure
 
+The structure of the code for this design is follows: 
+
+    src/
+        controller/ 
+        model/
+        view/
+        util/
+        middleware/
+    test/
+        controller/
+        model/
+        view/
+        util/
+        middleware/
+    public/
+    init.js
+    package.son
+    
+This code structure follows a simple MVC paradigm. Controllers and boilerplate HTTP code are provided by the NodeJS Express framework: [http://expressjs.com/4x/api.html#express](http://expressjs.com/4x/api.html#express). Views are facilitated by HandleBars JS [http://handlebarsjs.com/](http://handlebarsjs.com/). 

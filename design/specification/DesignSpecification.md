@@ -1,4 +1,8 @@
-    # Authentication Component Design Specification
+# Authentication Component Design Specification
+
+**Author :**  Simon Diemert <br>
+**Created On : **  2015-07-12 <br>
+**Updated On :** 2015-07-17
 
 ## Document Purpose
 
@@ -118,7 +122,7 @@ The following provides a description of the class (formally object in JavaScript
 
 This section describes the relationships between the Node Express web service framework and the auth application code. As previously mentioned, the design has attempted to mitigate the [coupling](https://en.wikipedia.org/wiki/Coupling_%28computer_programming%29) between classes (objects) with the Express framework and the rest of the application.  
 
-![Data Model](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/application-express-interface.png)
+![Express Interface](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/application-express-interface.png)
 
 The UML class diagram above shows the use of the factory pattern to create Node Express *ExpressRouter* objects. The *RouterFactory* consumes a *RouteController* object and generates an *ExpressRouter*, which can then be provided directly to the *ExpressServer*. 
 
@@ -128,5 +132,58 @@ The *RouteContoller*, *Request*, and *Response* objects are the only points of c
 
 The section describes the relationships between the DACS Distributed Access Control System and the auth application code. This interface was created to reduce the amount of coupling between the DACS system and the application code. It uses a facade design pattern where one interface, the *AccessControlSystem*, defines the functionality that is available to the rest of the system. 
 
-![Data Model](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/application-dacs-interface.png)
+![DACS Interface](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/application-dacs-interface.png)
 
+Behind the *AccessControlSystem* facade is an adapter for specifically for DACS (this could be swapped out for another adapter if desired). It must access DACS through both external programs (cookies and private data via the command line) and through the file system (for roles and users). Helper classes are provided for both of those. These classes consume and return business objects that are used by the rest of the application code base. 
+
+The *PersistenceManager* class is the interface with the rest of the auth application code. It, and its sub-classes, are the only way to make requests to the *AccessControlSystem*. This extra layer of abstraction means one can swap out the *AccessControlSystem* at any point and provide an entirely different way of storing user data. 
+
+### Model Classes
+
+This section describes the relationships between the classes (and objects) that represent the data model. All model objects inherit from an *Entity* object. This provides a bare minimum functionality for each object, including an identity attribute. A *ControlledEntity* is an object that represents an entity in the real world that has its access controlled, for example a *User* of the system has its access controlled by the auth component. However, a *Role* does not have its access controlled, instead it governs kind of access that an entity has. 
+
+The *UserCookie* object is a wrapper around a *User* object that supports the concept of a cookie, or encrypted representation of the *User* object. Both the *User* and *UserCookie* objects are used to interact with the *AccessControlSystem* interface. 
+
+![Model Classes](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/business-objects.png)
+
+### Actions
+
+The *Action* classes provide a means of defining workflows or processes within the application. *Action*s are utilized by controllers to service requests. The relationships between actions is a modification of a traditional strategy pattern. As the UML class diagram below indicates, *Action*s may include other *Action*s and may call them as needed. All *Action*s must provide a `doAction()` method that triggers the main process encoded by the *Action*. Prior to executing it's main workflow, each *Action* should run its `actionPreCondition()` method to determine whether the necessary structure exists for it to execute successfully. If the *Action* cannot execute successfully, it should thrown an *ActionPreConditionError*. 
+
+![Action](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/action.png)
+
+The next diagram shows the relationship between *Action*s and the *RouteController*s. 
+
+![Action Controller Relationships](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/action-controller-relationships.png)
+
+## Interactions
+
+This section describes key interactions between different objects in the auth application. Many of these interactions correspond directly to actions that are described by an *Action* object. 
+
+### Authentication
+
+Authentication of a *User* is preformed by constructing a *User* object and passing it to the *AccessControlSystem* (a *DACSAdapter* in this case) via the *UserPersistenceManager*. The *AccessControlSystem* will validate the *User* and return (asynchronously via callbacks) a populated *User* object or the `err` parameter of the callback will be set; indicating that the authentication failed. 
+
+![AuthenticateAction](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/authAction.doAction.png)
+
+### Cookie Management
+
+This section describes *Action*s that are related to generation and decryption of cookies. There are two such *Action*s, *GetCookieAction* and *VerifyAction*. 
+
+#### GetCookie
+
+The *GetCookieAction* obtains a cookie from the *AccessControlSystem* that represents the provided *User* object. A *UserCookie* object is returned (via asynchronous callback) to the parent of the *GetCookieAction*. The following UML sequence diagram describes interaction. 
+
+![GetCookieAction](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/getCookieAction.doAction.png)
+
+#### Verify
+
+The *VerifyAction* verifies that a cookie is valid. The action "unbakes" or decrypts a cookie that was previously generated by the *AccessControlSystem* and returns a *UserCookie* (via asynchronous callback) object to the parent of the *VerifyAction*. If the cookie could not be verified, due to expiration or being invalid, an error will be returned. the The following UML sequence diagram describes interaction. 
+
+![VerifyAction](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/VerifyAction.doAction.png)
+
+### Login
+
+The *LoginAction* allows users to log into the auth component. This action requires a takes in username, password, jurisdiction and returns a fully constructed UserCookie object or fails with an err. The response is provided by asynchronous callback. This action uses two other actions, namely *GetCookieAction* and *AuthenticationAction*. The following UML sequence diagram shows the interaction with these two other actions. 
+
+ ![LoginAction](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/loginAction.doAction.png)

@@ -97,7 +97,7 @@ The structure of the code for this design is follows:
     init.js
     package.son
     
-This code structure follows a simple MVC paradigm. Controllers and boilerplate HTTP code are provided by the NodeJS Express framework: [http://expressjs.com/4x/api.html#express](http://expressjs.com/4x/api.html#express). Views are facilitated by HandleBars JS [http://handlebarsjs.com/](http://handlebarsjs.com/). 
+This code structure follows a simple MVC paradigm. Controllers and boilerplate HTTP networking code are provided by the NodeJS Express framework: [http://expressjs.com/4x/api.html#express](http://expressjs.com/4x/api.html#express). Views are HTML pages facilitated by HandleBars JS [http://handlebarsjs.com/](http://handlebarsjs.com/). 
 
 ### Design Concepts
 
@@ -156,6 +156,13 @@ The next diagram shows the relationship between *Action*s and the *RouteControll
 
 ![Action Controller Relationships](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/action-controller-relationships.png)
 
+### Auditing
+
+The *Auditor* class provides an interface for auditing components. It, coupled with an *AuditEvent* provide a means of auditing key interactions within the system. The *Auditor* class can be extended to provide an interface to several different auditing frameworks. The default class is *FileAuditor* which simply writes events to file. *Auditor*s also utilize a *Logger* singleton to write their output to standard out. 
+
+![Auditing](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/auditor.png)
+
+
 ## Interactions
 
 This section describes key interactions between different objects in the auth application. Many of these interactions correspond directly to actions that are described by an *Action* object. 
@@ -187,3 +194,92 @@ The *VerifyAction* verifies that a cookie is valid. The action "unbakes" or decr
 The *LoginAction* allows users to log into the auth component. This action requires a takes in username, password, jurisdiction and returns a fully constructed UserCookie object or fails with an err. The response is provided by asynchronous callback. This action uses two other actions, namely *GetCookieAction* and *AuthenticationAction*. The following UML sequence diagram shows the interaction with these two other actions. 
 
  ![LoginAction](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/loginAction.doAction.png)
+ 
+### API
+
+This section describes interactions that are meant to service API routes. See the API section for details about routes. The diagrams presented here show only the *normal* case of operation, that is where the request is successful. Failure cases (500, 404, 401, 400, etc.) must also be implemented. The following sub sections are organized by the route. 
+
+#### /login 
+
+Describes the interaction required for servicing the `/login` route. This route can service HTTP POST and GET requests. 
+
+##### GET
+
+HTTP GET requests are serviced by simply redirecting the client to the login page of the application. 
+
+![Login GET](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/login.get.png)
+
+##### POST
+
+HTTP POST requests are serviced by executing the *LoginAction* workflow. The result of which is a cookie and user data to be returned to the client. 
+
+![Login POST](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/login.post.png)
+
+#### /verify
+
+Describes the interaction required for verifying an existing cookie. This route can service **only** HTTP **POST** request.
+
+![Login POST](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/verify.post.png)
+
+
+## API
+
+The following section describes the client facing Application Programming Interface (API). It provides several routes for logging into the system, validating an existing login, and user management. 
+
+### /auth/login 
+
+Allows users to login to the application and obtain a cookie for later use. 
+
+#### GET
+
+Responds by redirecting the client to a login screen. User is not authenticate, no cookie issued. 
+
+#### POST
+
+This route will generate a cookie that can be used to track a user through the system. Requires the following items be embedded in request json body: 
+
+* username as: `user`
+* password as: `pass`
+* jurisdiction as : `juri`
+* respond as : `respond`
+
+If login is successful, the response will be a JSON string of the following format: 
+
+* `{ "cookie" : "COOKIE_STRING" , "message" : "SOME MESSAGE" }`
+
+The response status code will be one of: 
+
+* `200` - Authentication completed successfully
+* `400` - Request was not well formed (see above)
+* `401` - The user could not be authenticated due to invalid credentials.  
+* `500` - An error occurred in the authentication process.
+
+In the event of a failed authentication (status code `500` , `400`, or `401`) the `cookie` field of the response will be `null` and the `message` field will contain an error description. 
+
+If the authentication is successful (status code `200`) the `cookie` field of the response will be a string that is the cookie for the authenticated user. The message field will contain a success message. 
+
+### /verify
+
+This route allows users to verify an existing cookie and obtain the private data associated with the cookie. 
+
+#### POST 
+
+This route verifies that an existing cookie is valid. This route requires that the cookie be a string embedded in the body of the post request. Specifically,cookie string must be accessible via: `request.body.bakedCookie`. 
+
+This route will return the following format: 
+
+* `{ "data" : DATA_OBJECT, "message" : "SOME MESSAGE" }`
+
+The `data` field of the response will contain an object that has user information which can be used to identify the user later: 
+
+* `user.clinic`
+* `user.clinician`'
+
+The response status code will be one of: 
+
+* `200` - Verification completed successfully
+* `400` - Request for verification was not well formed, i.e. there was not `request.body.bakedCookie` field
+* `401` - Verification failed, this means the cookie now invalid. The cookie may be expired or have been modified/tampered with. 
+* `500` - Verification failed due to an error during verification. 
+
+

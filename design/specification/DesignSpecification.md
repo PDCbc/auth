@@ -94,7 +94,7 @@ The structure of the code for this design is follows:
         util/
         middleware/
     public/
-    init.js
+    service.js
     package.son
     
 This code structure follows a simple MVC paradigm. Controllers and boilerplate HTTP networking code are provided by the NodeJS Express framework: [http://expressjs.com/4x/api.html#express](http://expressjs.com/4x/api.html#express). Views are HTML pages facilitated by HandleBars JS [http://handlebarsjs.com/](http://handlebarsjs.com/). 

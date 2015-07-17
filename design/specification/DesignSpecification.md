@@ -1,4 +1,4 @@
-# Authentication Component Design Specification
+    # Authentication Component Design Specification
 
 ## Document Purpose
 
@@ -94,3 +94,39 @@ The structure of the code for this design is follows:
     package.son
     
 This code structure follows a simple MVC paradigm. Controllers and boilerplate HTTP code are provided by the NodeJS Express framework: [http://expressjs.com/4x/api.html#express](http://expressjs.com/4x/api.html#express). Views are facilitated by HandleBars JS [http://handlebarsjs.com/](http://handlebarsjs.com/). 
+
+### Design Concepts
+
+Significant effort on the design of this software has been spent on ensuring that the external dependencies can be removed. As such, several classes have been created to provide a clean interface between: 
+
+* Auth business logic and DACS
+* Node Express server and auth business logic
+
+These abstractions will likely improve the maintainability of the system should an external dependency change, need to be adjusted or, need to be replaced. 
+
+## Data Model
+
+This section presents a data model that is utilized by the auth component. This model has many parallels with the DACS data model. 
+
+![Data Model](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/primary_data_model.png)
+
+## Class Design
+
+The following provides a description of the class (formally object in JavaScript) structure for the auth component code base. Several diagrams are used to illustrate key relationships.  In order to save space in the diagrams, operation signatures have been removed unless they are absolutely required to illustrate a concept; for detailed operation signatures, consult the UML model. 
+
+### Interface with Express
+
+This section describes the relationships between the Node Express web service framework and the auth application code. As previously mentioned, the design has attempted to mitigate the [coupling](https://en.wikipedia.org/wiki/Coupling_%28computer_programming%29) between classes (objects) with the Express framework and the rest of the application.  
+
+![Data Model](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/application-express-interface.png)
+
+The UML class diagram above shows the use of the factory pattern to create Node Express *ExpressRouter* objects. The *RouterFactory* consumes a *RouteController* object and generates an *ExpressRouter*, which can then be provided directly to the *ExpressServer*. 
+
+The *RouteContoller*, *Request*, and *Response* objects are the only points of contact with the Node Express framework. Each request is serviced by the bound *RouterController* and accesses any information regarding requests or responses through the *Request* and *Response* objects, which will return the data (if applicable) from the *ExpressRequest* and *ExpressResponse* objects. 
+
+### Interface with DACS
+
+The section describes the relationships between the DACS Distributed Access Control System and the auth application code. This interface was created to reduce the amount of coupling between the DACS system and the application code. It uses a facade design pattern where one interface, the *AccessControlSystem*, defines the functionality that is available to the rest of the system. 
+
+![Data Model](/Users/sdiemert/pdc/dev3/auth/auth/design/models/images/current/application-dacs-interface.png)
+

@@ -25,12 +25,12 @@ function User(username, password, juri, clinicianId, clinic, roles) {
     //set up super class
     ControlledEntity.call(this, clinicianId);
 
-    this.username     = username;
-    this.password     = password;
-    this.clinicianId  = clinicianId;
-    this.clinic       = clinic;
-    this.jurisdiction = juri;
-    this.roles        = roles;
+    this.username     = username || null;
+    this.password     = password || null;
+    this.clinicianId  = clinicianId || null;
+    this.clinic       = clinic || null;
+    this.jurisdiction = juri || null;
+    this.roles        = roles || null;
 
 }
 
@@ -113,6 +113,21 @@ User.prototype.setJurisdiction = function (jid) {
  */
 User.prototype.getPassword = function () {
     return this.password;
+};
+
+/**
+ * @documentation Determines if the user object is well formed. This function checks to see whether user has a username, password, and jurisdiction.
+ *
+ * @return {Boolean} true if this User is well formed, false otherwise.
+ */
+User.prototype.isWellFormed = function () {
+
+    if (!this.username || !this.password || !this.jurisdiction) {
+        return false
+    } else {
+        return true;
+    }
+
 };
 
 module.exports = {User: User};

@@ -3,8 +3,6 @@
  * Class: Entity
  */
 
-var NotImplementedError = require('../util/error/NotImplementedError');
-
 function Entity(id) {
 
     this.identity = id;
@@ -15,7 +13,8 @@ function Entity(id) {
  * @return  {String}
  */
 Entity.prototype.getIdentity = function () {
-    throw 'AbstractMethodNotImplementedError';
+
+    return this.identity;
 
 };
 
@@ -25,6 +24,15 @@ Entity.prototype.getIdentity = function () {
 Entity.prototype.setIdentity = function (i) {
     throw 'AbstractMethodNotImplementedError';
 
+};
+
+/**
+ * Deterines whether the object is well formed. Must be implemented by sub-objects.
+ *
+ * @return { Boolean } true if the entity is well formed, false otherwise.
+ */
+Entity.prototype.isWellFormed = function () {
+    throw 'AbstractMethodNotImplementedError';
 };
 
 /**

@@ -8,7 +8,7 @@ var Entity = require('./Entity').Entity;
 
 function ControlledEntity(id, roles) {
 
-    Entity.call(this, id)
+    Entity.call(this, id);
 
     this.roles = roles || [];
 
@@ -32,7 +32,6 @@ ControlledEntity.prototype.setRoles = function (roles) {
     throw 'AbstractMethodNotImplementedError';
 
 };
-
 
 /**
  * @param r { Role }

@@ -25,8 +25,6 @@ function httpd(next, data) {
         //require('hbs').registerPartials( __dirname + '../../views/partials');
         require('hbs').registerPartials(__dirname + "/" + '../views/partials');
 
-        console.log("Loading views: " + __dirname + "/" + '../views/partials');
-
         // Print out JSON.
         require('hbs').registerHelper('json', function (data) {
             return JSON.stringify(data);

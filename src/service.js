@@ -31,7 +31,6 @@ function go() {
         require('https').createServer(data.certificate, data.httpd.control)
             .listen(process.env.CONTROLPORT, function () {
                 logger.success('Control listening on port ' + process.env.CONTROLPORT);
-                logger.error("Some message");
             });
     }
 

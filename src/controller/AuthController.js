@@ -13,7 +13,9 @@ function AuthController(path, proc) {
 
     proc = proc || {};
 
-    var that = RouteController(path, proc);
+    proc.path = path || "/login";
+
+    var that = RouteController(proc.path, proc);
 
     /**
      * @param req {Request}
@@ -26,7 +28,6 @@ function AuthController(path, proc) {
     };
 
     /**
-     *
      * @param req { Request }
      * @param res { Response }
      */

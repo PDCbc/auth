@@ -8,12 +8,14 @@ var methodOverride = require('method-override');
 var util           = require('util');
 var auth           = require('./auth');
 
-var RouterFactory  = require("../controller/RouterFactory").RouterFactory;
-var AuthController = require("../controller/AuthController").AuthController;
+var RouterFactory    = require("../controller/RouterFactory").RouterFactory;
+var AuthController   = require("../controller/AuthController").AuthController;
+var VerifyController = require("../controller/VerifyController").VerifyController;
 
 
 /**
  * Sets up the standard routes for the application. Check the express documentation on routers.
+ *
  * @param {Function} next The async callback. Signature (error, result)
  * @param {Object} data Contains results of the `models` and `httpd` task.
  */
@@ -24,12 +26,15 @@ function routes(next, data) {
 
     var factory = RouterFactory();
 
-    var authController = AuthController("/login");
+    var authController = AuthController();
+    var authRouter     = factory.createRouter(authController);
 
-    var authRouter = factory.createRouter(authController);
+    var verifyController = VerifyController();
+    var verifyRouter     = factory.createRouter(verifyController);
 
     mainRouter.use('/auth', authRouter);
 
+    controlRouter.use('/verify', verifyRouter);
 
     var userRouter = new express.Router();
     userRouter.use(auth.hasRole('admin'));
@@ -147,7 +152,6 @@ function routes(next, data) {
     controlRouter.use('/users', userRouter);
     controlRouter.use('/roles', roleRouter);
     controlRouter.use('/auth', authRouter);
-    //controlRouter.use('/verify', verifyRouter);
 
     next(null);
 }

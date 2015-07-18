@@ -5,8 +5,9 @@
  * This class (object) is a factory to create express.Router objects from RouteContoller objects.
  */
 
-var express = require('express');
-var logger  = require('../util/logger/Logger').Logger('RouterFactory');
+var express                = require('express');
+var logger                 = require('../util/logger/Logger').Logger('RouterFactory');
+var InvalidControllerError = require("../util/error/InvalidControllerError").InvalidControllerError;
 
 function RouterFactory(proc) {
 
@@ -25,15 +26,15 @@ function RouterFactory(proc) {
 
         if (!controller.get) {
 
-            throw new TypeError("Controller " + controller + " does not have the required get() function, failed to create express.Router");
+            throw new InvalidControllerError("Controller " + controller + " does not have the required get() function, failed to create express.Router");
 
         } else if (!controller.post) {
 
-            throw new TypeError("Controller " + controller + " does not have the required post() function, failed to create express.Router");
+            throw new InvalidControllerError("Controller " + controller + " does not have the required post() function, failed to create express.Router");
 
         } else if (!controller.getPath) {
 
-            throw new TypeError("Controller " + controller + " does not have the required getPath() function, failed to create express.Router");
+            throw new InvalidControllerError("Controller " + controller + " does not have the required getPath() function, failed to create express.Router");
 
         }
 

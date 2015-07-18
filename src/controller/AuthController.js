@@ -7,6 +7,7 @@
 var util = require('util');
 
 var RouteController = require('./RouteController').RouteController;
+var NotImplementedError = require("../util/error/NotImplementedError").NotImplementedError;
 
 function AuthController(path, proc) {
 
@@ -32,7 +33,6 @@ function AuthController(path, proc) {
     var handleGet = function (req, res) {
 
         res.send(200, "some response");
-
 
     };
 

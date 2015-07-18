@@ -9,8 +9,8 @@
  */
 
 var Response = require('./Response').Response;
-
 var Request = require('./Request').Request;
+var NotImplementedError = require("../util/error/NotImplementedError").NotImplementedError;
 
 function RouteController(path, proc) {
 
@@ -65,10 +65,7 @@ function RouteController(path, proc) {
      */
     var handleGet = function (req, res) {
 
-        console.log("RouterController.handleGet()");
-        console.log(proc.handleGet);
-
-        throw 'AbstractMethodNotImplementedError';
+        throw new NotImplementedError("RouterController does not contain an implementation for handleGet()");
 
     };
 

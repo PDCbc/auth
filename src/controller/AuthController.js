@@ -33,7 +33,7 @@ function AuthController(path, proc) {
      */
     var handleGet = function (req, res) {
 
-        res.send(200, "some response");
+        res.show("login");
 
     };
 

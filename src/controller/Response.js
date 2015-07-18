@@ -31,7 +31,15 @@ function Response(response, proc) {
      */
     var show = function (view, obj) {
 
-        //TODO: Implement Me 
+        if (!view) {
+
+            throw new Error("Cannot render view: " + view);
+
+        }
+
+        obj = obj || {};
+
+        proc.response.render(view, obj);
 
     };
 

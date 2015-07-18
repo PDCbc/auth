@@ -24,6 +24,7 @@ function UnixCommandLine(proc) {
      *
      * @precondition validCommand : the cmd is a non-empty string.
      * @precondition validCallback : the next callback function is a function with three arguments.
+     * @precondition sanitizeInputIsSet : the proc.sanitizeInput(String) function is set and takes 1 argument.
      *
      * @param cmd {String} the command to execute
      * @param stdin {String} a string to pass to stdin, if there is no need to write the stdin, this should be null.
@@ -39,6 +40,7 @@ function UnixCommandLine(proc) {
 
         }
 
+        //rely on the ExternalProgram.sanitizeInput() function.
         cmd = proc.sanitizeInput(cmd);
 
         proc._exec(cmd, stdin, next);
@@ -73,11 +75,13 @@ function UnixCommandLine(proc) {
      */
     var execStdin = function (cmd, stdin, next) {
 
+        //create the process
         var c = cp.spawn(cmd);
 
         var stdout = null;
         var stderr = null;
 
+        //write into stdin
         c.stdin.write(stdin);
         c.stdin.end();
 
@@ -98,7 +102,7 @@ function UnixCommandLine(proc) {
         c.on('close', function (code) {
 
             //don't handle any codes here, just pass back to
-            //the caller, they decide what to do with the result.
+            // the caller, they decide what to do with the result.
             next(code, stdout, stderr);
 
         });
@@ -120,17 +124,38 @@ function UnixCommandLine(proc) {
 
     /**
      * Determines if the preconditions for the exec() function are met.
-     * @param cmd {String}
-     * @param stdin {String}
-     * @param next {Function} callback with three arguments.
+     *
+     * @param cmd {String} test that this is a non-empty string.
+     * @param stdin {String} test that if this is non-null, it is a string
+     * @param next {Function} test that this is a function with three arguments.
      *
      * @return {Boolean} true if the preconditions are met, false otherwise.
      */
     var execPreconditions = function (cmd, stdin, next) {
 
-        if (!cmd || typeof s !== 'string') {
+        //check that cmd argument is valid
+        if (!cmd || typeof cmd !== 'string' || cmd === "") {
+
             return false;
+
         }
+
+        //stdin is allowed to null.
+        if (stdin !== null && stdin !== undefined) {
+
+            if (typeof stdin !== 'string' || stdin === "") {
+
+                return false;
+
+            }
+        }
+
+        if (!proc || !proc.sanitizeInput || proc.sanitizeInput.length !== 1) {
+
+            return false;
+
+        }
+
 
         if (!next || !(next instanceof Function) || next.length !== 3) {
             throw new CallbackInvalidError("UnixCommandLine.exec(String, String, Function) requires a callback function with three parameters.");

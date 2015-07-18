@@ -63048,6 +63048,11 @@
 															"direction": "return"
 														}
 													],
+													"raisedExceptions": [
+														{
+															"$ref": "AAAAAAFOopKDq9qrnHg="
+														}
+													],
 													"concurrency": "sequential",
 													"isQuery": false,
 													"isAbstract": false
@@ -64126,7 +64131,7 @@
 														"$ref": "AAAAAAFOjiuUy4APnV0="
 													},
 													"name": "sanitizeInput",
-													"visibility": "public",
+													"visibility": "protected",
 													"isStatic": false,
 													"isLeaf": false,
 													"parameters": [
@@ -76319,7 +76324,7 @@
 													"height": 13,
 													"autoResize": false,
 													"underline": false,
-													"text": "+sanitizeInput()",
+													"text": "#sanitizeInput()",
 													"horizontalAlignment": 0,
 													"verticalAlignment": 5
 												}

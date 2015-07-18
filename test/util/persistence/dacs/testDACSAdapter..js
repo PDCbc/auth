@@ -4,9 +4,11 @@
  * Unit tests for: FILE TO TEST.
  */
 
-var assert      = require('assert');
-var DACSAdapter = require("../../../../src/util/persistence/dacs/DACSAdapter").DACSAdapter;
-var User        = require("../../../../src/model/User").User;
+var assert               = require('assert');
+var DACSAdapter          = require("../../../../src/util/persistence/dacs/DACSAdapter").DACSAdapter;
+var User                 = require("../../../../src/model/User").User;
+var CallbackInvalidError = require("../../../../src/util/error/CallbackInvalidError").CallbackInvalidError;
+var OtherError           = require("../../../../src/util/error/NotImplementedError").NotImplementedError;
 
 
 describe("DACSAdapter", function () {
@@ -101,9 +103,11 @@ describe("DACSAdapter", function () {
 
         it("should throw an error if a function is not provided. ", function (done) {
 
-            var u = User("name", "pass", "juri");
+            var u = new User("name", "pass", "juri");
 
-            assert.throws(proc.getUserPrecondition(u, null));
+            assert.throws(function () {
+                proc.getUserPrecondition(u, null);
+            }, CallbackInvalidError);
 
             done();
 
@@ -111,10 +115,12 @@ describe("DACSAdapter", function () {
 
         it("should throw an error if a function with the wrong number of args is provided", function (done) {
 
-            var u = User("name", "pass", "juri");
+            var u = new User("name", "pass", "juri");
 
-            assert.throws(proc.getUserPrecondition(u, function (a) {
-            }));
+            assert.throws(function () {
+                proc.getUserPrecondition(u, function (a) {
+                });
+            }, CallbackInvalidError);
 
             done();
 
@@ -122,9 +128,11 @@ describe("DACSAdapter", function () {
 
         it("should throw an error if something that is not a function is passed as next", function (done) {
 
-            var u = User("name", "pass", "juri");
+            var u = new User("name", "pass", "juri");
 
-            assert.throws(proc.getUserPrecondition(u, {}));
+            assert.throws(function () {
+                proc.getUserPrecondition(u, {});
+            }, CallbackInvalidError);
 
             done();
 

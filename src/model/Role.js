@@ -3,9 +3,7 @@
  * Class: Role
  */
 
-var NotImplementedError = require('NotImplementedError');
-
-var Entity = require('Entity').Entity;
+var Entity = require('./Entity').Entity;
 
 function Role(name) {
 

@@ -4,7 +4,7 @@
  * Description: An entity that has aspects controlled by the system. Ex. groups or users can have their roles controlled.
  */
 
-var Entity = require('Entity').Entity;
+var Entity = require('./Entity').Entity;
 
 function ControlledEntity(id, roles) {
 

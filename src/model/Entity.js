@@ -3,7 +3,7 @@
  * Class: Entity
  */
 
-var NotImplementedError = require('NotImplementedError');
+var NotImplementedError = require('../util/error/NotImplementedError');
 
 function Entity(id) {
 

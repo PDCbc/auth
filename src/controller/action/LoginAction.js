@@ -3,7 +3,7 @@
  * Class: LoginAction
  */
 
-var Action = require('Action').Action;
+var Action = require('./Action').Action;
 
 var logger = require("../../util/logger/Logger").Logger("LoginAction");
 
@@ -16,13 +16,14 @@ function LoginAction(username, password, juri, req, proc) {
     var that = Action();
 
     proc.req  = req;
-    proc.user = User(username, password, juri);
+    proc.user = new User(username, password, juri);
 
     /**
      * @param next {Function} - to call when the action is complete.
      */
     var doAction = function (next) {
 
+        next(null, proc.user);
 
     };
 
@@ -71,6 +72,7 @@ function LoginAction(username, password, juri, req, proc) {
     that.setRequest         = setRequest;
     that.getRequest         = getRequest;
     proc.actionPreCondition = actionPreCondition;
+    that.doAction = doAction;
 
     return that;
 

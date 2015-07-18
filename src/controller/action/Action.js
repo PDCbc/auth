@@ -4,9 +4,7 @@
  * Description: Describes a concrete business action to take on the objects within the data model. Controllers should use this interface to trigger the required processes.
  */
 
-var Entity = require('Entity');
-
-var NotImplementedError = require('NotImplementedError');
+var NotImplementedError = require('../../util/error/NotImplementedError');
 
 function Action(proc) {
 

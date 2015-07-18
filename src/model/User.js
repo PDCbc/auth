@@ -4,9 +4,10 @@
  * Description: Describes a user object in the system.
  */
 
-var roles = require('Role');
-
-var ControlledEntity = require('ControlledEntity');
+var util             = require('util');
+var roles            = require('./Role');
+var ControlledEntity = require('./ControlledEntity').ControlledEntity;
+var logger           = require("../util/logger/Logger").Logger("User");
 
 /**
  * Creates a User object.
@@ -22,6 +23,7 @@ var ControlledEntity = require('ControlledEntity');
 function User(username, password, juri, clinicianId, clinic, roles) {
 
     ControlledEntity.call(this, clinicianId);
+
 
     this.username     = username;
     this.password     = password;

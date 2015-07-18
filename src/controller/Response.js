@@ -43,8 +43,17 @@ function Response(response, proc) {
 
     };
 
-    that.send = send;
-    that.show = show;
+    var sendBadRequest = function (message) {
+
+        //HTTP status code for bad request is 400.
+        proc.response.status(400);
+        proc.response.json({message: message});
+
+    };
+
+    that.send           = send;
+    that.show           = show;
+    that.sendBadRequest = sendBadRequest;
 
     return that;
 

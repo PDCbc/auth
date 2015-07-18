@@ -43,10 +43,22 @@ function Request(request, proc) {
 
     };
 
+    /**
+     * Returns the request's body object.
+     *
+     * @returns { Object }
+     */
+    var getBody  = function () {
+
+        return proc.request.body;
+
+    };
+
     that.getSourceIP  = getSourceIP;
     that.getSourceMAC = getSourceMAC;
     that.getQuery     = getQuery;
     that.getParams    = getParams;
+    that.getBody = getBody;
 
     return that;
 

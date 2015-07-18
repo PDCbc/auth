@@ -36,7 +36,7 @@ function UnixCommandLine(proc) {
 
         if (!proc.execPreconditions(cmd, stdin, next)) {
 
-            next(error.ERR_FAILED_ACTION_PRECONDITION, null, null);
+            return next(error.ERR_FAILED_PRECONDITION, null, null);
 
         }
 

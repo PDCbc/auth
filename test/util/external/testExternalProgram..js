@@ -1,7 +1,7 @@
 /**
  * Create by sdiemert on 15-07-18
  *
- * Unit tests for: FILE TO TEST.
+ * Unit tests for: ExternalProgram.
  */
 
 var assert          = require('assert');

@@ -1,14 +1,15 @@
 /**
  * Create by sdiemert on 15-07-18
  *
- * Unit tests for: FILE TO TEST.
+ * Unit tests for: UnixCommandLine.
  */
 
 var assert               = require('assert');
 var UnixCommandLine      = require('../../../src/util/external/UnixCommandLine').UnixCommandLine;
 var CallbackInvalidError = require("../../../src/util/error/CallbackInvalidError").CallbackInvalidError;
+var error = require("../../../src/util/error/ErrorCodes");
 
-describe("module_name", function () {
+describe("UnixCommandLine", function () {
 
     beforeEach(function (done) {
 
@@ -19,6 +20,71 @@ describe("module_name", function () {
     afterEach(function (done) {
 
         done();
+
+    });
+
+    describe("#exec()", function () {
+
+        var proc = null;
+        var ucl  = null;
+
+
+        // a function to replace the _exec function in
+        //  UnixCommandLine object. This way we don't have
+        //  to rely on running the external process to test
+        //  the logic within exec().
+        var _exec = function (a, b, c) {
+
+            c("test_exec", "test_exec", "test_exec");
+
+        };
+
+        beforeEach(function (done) {
+
+            proc       = {};
+            ucl        = UnixCommandLine(proc);
+            proc._exec = _exec;
+
+            done();
+
+        });
+
+        afterEach(function (done) {
+
+            proc = null;
+            ucl  = null;
+
+            done();
+
+        });
+
+        it("should return with ERR_FAILED_PRECONDITION input that does not satisfy preconditions", function (done) {
+
+            ucl.exec(null, null, function (err, sto, ste) {
+
+                assert.equal(sto, null);
+                assert.equal(ste, null);
+                assert.equal(err, error.ERR_FAILED_PRECONDITION);
+
+                done();
+
+            });
+
+        });
+
+        it("should call _exec() for valid input", function (done) {
+
+            ucl.exec("foo", null, function (err, sto, ste) {
+
+                assert.equal(sto, "test_exec");
+                assert.equal(ste, "test_exec");
+                assert.equal(err, "test_exec");
+
+                done();
+
+            });
+
+        });
 
     });
 

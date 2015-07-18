@@ -15,3 +15,9 @@ module.exports.ERR_FAILED_ACTION_PRECONDITION = "ERR_FAILED_ACTION_PRECONDITION"
 
 //used when the AuthenticateAction was unable to authenticate the user.
 module.exports.ERR_FAILED_TO_AUTHENTICATE = "ERR_FAILED_TO_AUTHENTICATE_USER";
+
+
+//General Error Codes
+module.exports.ERR_FAILED_PRECONDITION = "ERR_FAILED_PRECONDITION";
+
+

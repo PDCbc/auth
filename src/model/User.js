@@ -22,8 +22,8 @@ var logger           = require("../util/logger/Logger").Logger("User");
  */
 function User(username, password, juri, clinicianId, clinic, roles) {
 
+    //set up super class
     ControlledEntity.call(this, clinicianId);
-
 
     this.username     = username;
     this.password     = password;
@@ -40,8 +40,7 @@ User.prototype = new ControlledEntity();
  * @return  {String}
  */
 User.prototype.getUsername = function () {
-    //TODO: Implement Me 
-
+    return this.username;
 };
 
 
@@ -49,8 +48,9 @@ User.prototype.getUsername = function () {
  * @param uname {String}
  */
 User.prototype.setUsername = function (uname) {
-    //TODO: Implement Me 
-
+    if (uname) {
+        this.username = uname;
+    }
 };
 
 
@@ -58,8 +58,7 @@ User.prototype.setUsername = function (uname) {
  * @return  {String}
  */
 User.prototype.getClinicianId = function () {
-    //TODO: Implement Me 
-
+    return this.clinicianId;
 };
 
 
@@ -67,8 +66,10 @@ User.prototype.getClinicianId = function () {
  * @param cid {String}
  */
 User.prototype.setClinicianId = function (cid) {
-    //TODO: Implement Me 
-
+    if (cid) {
+        this.clinicianId = cid;
+        this.identity    = cid;
+    }
 };
 
 
@@ -76,8 +77,7 @@ User.prototype.setClinicianId = function (cid) {
  * @return  {String}
  */
 User.prototype.getClinic = function () {
-    //TODO: Implement Me 
-
+    return this.clinic;
 };
 
 
@@ -85,8 +85,9 @@ User.prototype.getClinic = function () {
  * @param cid {String}
  */
 User.prototype.setClinic = function (cid) {
-    //TODO: Implement Me 
-
+    if (cid) {
+        this.clinic = cid;
+    }
 };
 
 
@@ -94,8 +95,7 @@ User.prototype.setClinic = function (cid) {
  * @return  {String}
  */
 User.prototype.getJurisdiction = function () {
-    //TODO: Implement Me 
-
+    return this.jurisdiction;
 };
 
 
@@ -103,9 +103,16 @@ User.prototype.getJurisdiction = function () {
  * @param jid {String}
  */
 User.prototype.setJurisdiction = function (jid) {
-    //TODO: Implement Me 
-
+    if (jid) {
+        this.jurisdiction = jid;
+    }
 };
 
+/**
+ * @returns { String } - The user's password.
+ */
+User.prototype.getPassword = function () {
+    return this.password;
+};
 
 module.exports = {User: User};

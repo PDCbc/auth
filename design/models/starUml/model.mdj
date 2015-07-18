@@ -59295,16 +59295,6 @@
 															"name": "userIsValid",
 															"visibility": "public",
 															"specification": "the object contains a valid User object\n"
-														},
-														{
-															"_type": "UMLConstraint",
-															"_id": "AAAAAAFOlA0tRHn8Cbk=",
-															"_parent": {
-																"$ref": "AAAAAAFOlAgKdmhrBFM="
-															},
-															"name": "Constraint1",
-															"visibility": "public",
-															"specification": "If authentication was successful, the user object contains  a fully populated user object.\n"
 														}
 													]
 												},

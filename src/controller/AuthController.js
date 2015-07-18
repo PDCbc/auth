@@ -7,7 +7,6 @@
 var util = require('util');
 
 var RouteController = require('./RouteController').RouteController;
-var NotImplementedError = require("../util/error/NotImplementedError").NotImplementedError;
 var LoginAction     = require("./action/LoginAction").LoginAction;
 var logger          = require("../util/logger/Logger").Logger("AuthController");
 
@@ -22,6 +21,8 @@ function AuthController(path, proc) {
     proc.loginAction = null;
 
     /**
+     * @documentation Internal method to handle POST requests. Called by RouteController.post() method.
+     *
      * @param req {Request}
      * @param res {Response}
      */
@@ -53,11 +54,14 @@ function AuthController(path, proc) {
     };
 
     /**
+     * @documentation Internal method to handle GET requests, called by RouteController.get()
+     *
      * @param req { Request }
      * @param res { Response }
      */
     var handleGet = function (req, res) {
 
+        //we just redirect the to the login screen.
         res.show("login");
 
     };

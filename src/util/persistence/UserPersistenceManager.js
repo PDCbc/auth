@@ -107,7 +107,7 @@ function UserPersistenceManager(proc) {
     var populatePrecondition = function (user, next) {
 
         //check that the user is valid.
-        if (!proc.user || !proc.user.getUsername() || !proc.user.getPassword() || !proc.user.getJurisdiction()) {
+        if (!proc.user || !(proc.user instanceof User) || !proc.user.isWellFormed()) {
 
             return false;
 
@@ -117,11 +117,11 @@ function UserPersistenceManager(proc) {
 
         }
 
-        if (!(next instanceof Function) || !next.arguments) {
+        if (!(next instanceof Function) || !next.length) {
 
             throw new CallbackInvalidError("Precondition for UserPersistenceManager.populate() failed, callback is not a valid function.");
 
-        } else if (next.arguments.length !== 2) {
+        } else if (next.length !== 2) {
 
             throw new CallbackInvalidError("Precondition for UserPersistenceManager.populate() failed, callback does not have 2 arguments as required.");
 

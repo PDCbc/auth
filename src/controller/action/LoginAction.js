@@ -132,7 +132,7 @@ function LoginAction(username, password, juri, req, proc) {
 
             return false;
 
-        } else if (!proc.callback || !(proc.callback instanceof Function)) {
+        } else if (!proc.callback || !(proc.callback instanceof Function) || proc.callback.length !== 2) {
             return false;
         }
 

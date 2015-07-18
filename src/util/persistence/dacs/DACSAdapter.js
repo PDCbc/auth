@@ -7,13 +7,14 @@
 
 var AccessControlSystem  = require('../AccessControlSystem').AccessControlSystem;
 var CallbackInvalidError = require("../../error/CallbackInvalidError").CallbackInvalidError;
-var error                = requrie("../../error/ErrorCodes");
+var error = require("../../error/ErrorCodes");
+var User  = require("../../../model/User").User;
 
 function DACSAdapter(proc) {
 
     proc = proc || {};
 
-    var that = AcessControlSystem();
+    var that = AccessControlSystem();
 
     /**
      * @documentation Authenticates the user object, and then populates it with private data from DACS.
@@ -39,13 +40,13 @@ function DACSAdapter(proc) {
 
     var getUserPrecondition = function (user, next) {
 
-        if (!user.isWellFormed()) {
+        if (!user || !(user instanceof User) || !user.isWellFormed()) {
 
             return false;
 
         }
 
-        if (!(next instanceof Function) || !next.arguments || next.arguments.length !== 2) {
+        if (!(next instanceof Function) || !next || next.length !== 2) {
 
             throw new CallbackInvalidError("DACSAdapter.getUser(user, next) precondition failed, argument next must be a function with 2 arguments.");
         }

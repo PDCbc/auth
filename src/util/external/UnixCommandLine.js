@@ -59,9 +59,13 @@ function UnixCommandLine(proc) {
         //if we have to write to stdin we need to use a different approach
         //filter for this and call the different function.
         if (stdin && stdin !== "") {
-            execStdin(cmd, stdin, next);
+
+            return proc.execStdin(cmd, stdin, next);
+
         } else {
-            execOneLine(cmd, next);
+
+            return proc.execOneLine(cmd, next);
+
         }
 
     };
@@ -103,7 +107,7 @@ function UnixCommandLine(proc) {
 
             //don't handle any codes here, just pass back to
             // the caller, they decide what to do with the result.
-            next(code, stdout, stderr);
+            return next(code, stdout, stderr);
 
         });
 
@@ -118,7 +122,7 @@ function UnixCommandLine(proc) {
     var execOneLine = function (cmd, next) {
 
         //See docs for child_process.exec(): https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback
-        cp.exec(cmd, next);
+        return cp.exec(cmd, next);
 
     };
 
@@ -158,7 +162,9 @@ function UnixCommandLine(proc) {
 
 
         if (!next || !(next instanceof Function) || next.length !== 3) {
+
             throw new CallbackInvalidError("UnixCommandLine.exec(String, String, Function) requires a callback function with three parameters.");
+
         }
 
         return true;

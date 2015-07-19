@@ -23,6 +23,87 @@ describe("UnixCommandLine", function () {
 
     });
 
+    describe("#_exec", function () {
+
+        var proc = null;
+        var ucl  = null;
+
+        var execStdin = function (cmd, stdin, next) {
+
+            return next('execStdin', 'execStdin', 'execStdin');
+        };
+
+        var execOneLine = function (cmd, next) {
+
+            return next('execOneLine', 'execOneLine', 'execOneLine');
+
+        };
+
+        beforeEach(function (done) {
+
+            proc             = {};
+            ucl              = UnixCommandLine(proc);
+            proc.execStdin   = execStdin;
+            proc.execOneLine = execOneLine;
+
+            done();
+
+        });
+
+        afterEach(function (done) {
+
+            proc = null;
+            ucl  = null;
+
+            done();
+
+        });
+
+        it("should run the execStdin if the cmd and stdin parameters are set", function (done) {
+
+            proc._exec("foo", "bar", function (a, b, c) {
+
+                assert.equal(a, 'execStdin');
+                assert.equal(b, 'execStdin');
+                assert.equal(c, 'execStdin');
+
+                done();
+
+            });
+
+        });
+
+        it("should run the execOneLine if the stdin parameters is null", function (done) {
+
+            proc._exec("foo", null, function (a, b, c) {
+
+                assert.equal(a, 'execOneLine');
+                assert.equal(b, 'execOneLine');
+                assert.equal(c, 'execOneLine');
+
+                done();
+
+            });
+
+        });
+
+
+        it("should run the execOneLine if the stdin parameters is empty string", function (done) {
+
+            proc._exec("foo", '', function (a, b, c) {
+
+                assert.equal(a, 'execOneLine');
+                assert.equal(b, 'execOneLine');
+                assert.equal(c, 'execOneLine');
+
+                done();
+
+            });
+
+        });
+
+    });
+
     describe("#exec()", function () {
 
         var proc = null;

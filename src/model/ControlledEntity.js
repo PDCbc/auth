@@ -34,10 +34,25 @@ ControlledEntity.prototype.setRoles = function (roles) {
 };
 
 /**
+ * @documentation adds a role to the Entity's list of roles.
+ *
+ * @precondition validRole : The role input is non-null and is well formed.
+ *
  * @param r { Role }
+ * @return {Boolean} true if the role was sucecssfully added, false otherwise.
  */
 ControlledEntity.prototype.addRole = function (r) {
-    throw 'AbstractMethodNotImplementedError';
+
+    if (!r || !r.isWellFormed()) {
+
+        return false;
+
+    } else {
+
+        this.roles = this.roles || [];  //initize the roles array if it isn't already
+        this.roles.push(r);
+        return true;
+    }
 
 };
 

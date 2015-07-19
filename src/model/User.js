@@ -30,7 +30,6 @@ function User(username, password, juri, clinicianId, clinic, roles) {
     this.clinicianId  = clinicianId || null;
     this.clinic       = clinic || null;
     this.jurisdiction = juri || null;
-    this.roles        = roles || null;
 
 }
 
@@ -127,6 +126,32 @@ User.prototype.isWellFormed = function () {
     } else {
         return true;
     }
+
+};
+
+/**
+ * return {Boolean} true if the user object has all of its fields set, false otherwise.
+ */
+User.prototype.isComplete = function () {
+
+    if (!this.username || !this.clinicianId || !this.identity || !this.clinic || !this.password || !this.jurisdiction) {
+
+        return false;
+
+    } else if (!this.roles) {
+
+        return false;
+
+    }
+
+    //check that each role of the user is well formed.
+    for (var r = 0; r < this.roles.length; r++) {
+        if (!this.roles[r].isComplete()) {
+            return false;
+        }
+    }
+
+    return true;
 
 };
 

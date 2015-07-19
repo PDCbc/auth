@@ -39,13 +39,23 @@ function AuthenticateAction(user, proc) {
 
         if (!proc.actionPreCondition()) {
 
-            next(error.ERR_FAILED_ACTION_PRECONDITION, null);
+            logger.warn("doAction(next): " + error.ERR_FAILED_ACTION_PRECONDITION);
+            return next(error.ERR_FAILED_ACTION_PRECONDITION, null);
 
         }
 
         proc.upm.populate(proc.user, function (err, result) {
 
-            next(err, result);
+            if (err) {
+
+                logger.warn("doAction(next) : " + err);
+                return next(err, null);
+
+            } else {
+
+                return next(null, result);
+
+            }
 
         });
 

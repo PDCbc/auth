@@ -36,8 +36,17 @@ Entity.prototype.isWellFormed = function () {
 };
 
 /**
- * @documentation: Compares two entities and determines if they are equivalent based on their identity field.
+ * @documentation checks to see if the Entity is complete. The definition of completeness
+ *  must be defined by the appropriate sub-class.
  *
+ * return {Boolean} true if the Entity is considered to be "complete", false otherwise.
+ */
+Entity.prototype.isComplete = function () {
+    throw 'AbstractMethodNotImplementedError';
+};
+
+/**
+ * @documentation: Compares two entities and determines if they are equivalent based on their identity field.
  *
  * @param e { Entity }
  * @return  {Boolean}

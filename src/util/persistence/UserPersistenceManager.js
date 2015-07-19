@@ -54,7 +54,8 @@ function UserPersistenceManager(proc) {
 
         if (!proc.populatePrecondition(user, next)) {
 
-            next(error.ERR_FAILED_ACTION_PRECONDITION, null);
+            logger.warn("UserPersistenceManager.populate(user, next) : " + error.ERR_FAILED_PRECONDITION);
+            return next(error.ERR_FAILED_PRECONDITION, null);
 
         }
 
@@ -68,11 +69,11 @@ function UserPersistenceManager(proc) {
 
             if (err) {
 
-                next(err, null);
+                return next(err, null);
 
             } else {
 
-                next(null, result);
+                return next(null, result);
             }
 
         });
@@ -120,7 +121,8 @@ function UserPersistenceManager(proc) {
     var populatePrecondition = function (user, next) {
 
         //check that the user is valid.
-        if (!proc.user || !(proc.user instanceof User) || !proc.user.isWellFormed()) {
+
+        if (!user || !(user instanceof User) || !user.isWellFormed()) {
 
             return false;
 

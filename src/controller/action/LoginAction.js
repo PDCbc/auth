@@ -10,7 +10,8 @@ var error = require("../../util/Codes");
 var Action             = require('./Action').Action;
 var User               = require("../../model/User").User;
 var AuthenticateAction = require("./AuthenticateAction").AuthenticateAction;
-var util = require('util');
+var util  = require('util');
+var codes = require("../../util/Codes.js");
 
 /**
  * @constructor
@@ -46,12 +47,12 @@ function LoginAction(username, password, juri, req, proc) {
 
             proc.authAction = AuthenticateAction(proc.user);
 
-            logger.info("doAction() user: " + util.inspect(proc.user));
-            proc.authAction.doAction(proc.handleAuthActionResponse);
+            //authenticate the user.
+            return proc.authAction.doAction(proc.handleAuthActionResponse);
 
         } else {
 
-            next(error.ERR_FAILED_ACTION_PRECONDITION, null);
+            return next(error.ERR_FAILED_ACTION_PRECONDITION, null);
 
         }
 
@@ -65,21 +66,34 @@ function LoginAction(username, password, juri, req, proc) {
      */
     var handleAuthActionResponse = function (err, result) {
 
-        logger.info("handleAuthActionResponse(" + err + ")");
 
         if (err && !result) {
 
-            //Authentication failed.
+            //Authentication failed. Pass back to the parent.
 
-            //TODO: switch on different codes codes.
+            logger.warn("handleAuthActionResponse(" + err + ")");
 
-            proc.callback(err, null);
+            return proc.callback(err, null);
 
         } else {
 
-            //successful auth
+            //successful auth, result contains a fully populated user object.
 
-            //TODO: create GetCookieAction and call its doAction() method
+            //check that we recieved a valid object back.
+            if (result instanceof User && result.isComplete()) {
+
+                //TODO: create GetCookieAction and call its doAction() method
+
+                //change me later.
+                return proc.callback(null, result)
+
+            } else {
+
+                //we got an incomplete user object back.... we can't reliably generate a cookie with this.
+
+                return proc.callback(codes.INVALID_USER, null);
+
+            }
 
         }
 

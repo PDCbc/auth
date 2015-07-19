@@ -9,6 +9,7 @@ var util = require('util');
 var RouteController = require('./RouteController').RouteController;
 var LoginAction     = require("./action/LoginAction").LoginAction;
 var logger          = require("../util/logger/Logger").Logger("AuthController");
+var codes = require("../util/Codes.js");
 
 function AuthController(path, proc) {
 
@@ -47,7 +48,30 @@ function AuthController(path, proc) {
 
         proc.loginAction.doAction(function (err, result) {
 
-            res.send(200, result);
+            //condition for failure.
+            if (err && !result) {
+
+                switch (err) {
+
+                    case codes.AUTH_FAILED:
+                        return res.send(401, {message: "authentication failed"});
+                        break;
+
+                    case codes.FETCH_PRIVATE_DATA_FAILED:
+                        return res.send(401, {message: "could not obtain private data"});
+                        break;
+
+                    default:
+                        return res.send(500, {message: "unknown error: " + err});
+                        break;
+                }
+
+            } else if (!err && result) { //condition for successful login.
+
+                //we expect that the result field contains a UserCookie object.
+
+                return res.send(200, {message: "temporary response..."});
+            }
 
         });
 
@@ -62,7 +86,7 @@ function AuthController(path, proc) {
     var handleGet = function (req, res) {
 
         //we just redirect the to the login screen.
-        res.show("login");
+        return res.show("login");
 
     };
 

@@ -26,6 +26,7 @@ function DACSAdapter(proc) {
      * @precondition userIsValid : The user object that was passed in is well-formed, contains username, password, and juridiction.
      * @precondition callbackIsValid : The next callback is a function that takes 2 arguments.
      * @precondition federationSet : The federation is set in process.env.FEDERATION
+     * @precondition rolefileSet : The path to the role file is available via process.env.ROLEFILE.
      *
      * @param user  { User } - The user to get we are fetching information for.
      * @param next { Function } - The callback to send the data back in. Has signature next(err, result)
@@ -36,7 +37,9 @@ function DACSAdapter(proc) {
     var getUser = function (user, next) {
 
         if (!proc.getUserPrecondition(user, next)) {
-            next(codes.ERR_FAILED_ACTION_PRECONDITION, null);
+
+            return next(codes.ERR_FAILED_ACTION_PRECONDITION, null);
+
         }
 
         //if we get here we know that we have met all of the preconditions.
@@ -45,13 +48,13 @@ function DACSAdapter(proc) {
 
             if (code === codes.AUTH_FAILED) {
 
-                next(code, null);
+                return next(code, null);
 
             } else {
 
                 proc.doDacsFetchPrivateData(user, function (code, result) {
 
-                    next(code, result);
+                    return next(code, result);
 
                 });
 
@@ -75,7 +78,7 @@ function DACSAdapter(proc) {
 
             if (code !== null) {
 
-                return next(code.FETCH_PRIVATE_DATA_FAILED, null);
+                return next(codes.FETCH_PRIVATE_DATA_FAILED, null);
 
             } else {
 
@@ -90,7 +93,7 @@ function DACSAdapter(proc) {
 
                 } catch (e) {
 
-                    return next(code.FETCH_PRIVATE_DATA_FAILED, null);
+                    return next(codes.FETCH_PRIVATE_DATA_FAILED, null);
 
                 }
 
@@ -105,6 +108,8 @@ function DACSAdapter(proc) {
         var cmd = "dacsauth "; //authentication command.
 
         cmd += "";  //verbose, set out level to debug
+        cmd += "-r roles"; //use role module
+        cmd += ' -vfs "[roles]dacs-kwv-fs:' + process.env.ROLEFILE + '" ';
         cmd += "-m passwd passwd required "; //use password module
         cmd += ' -vfs "[passwds]dacs-kwv-fs:/etc/dacs/federations/' + process.env.FEDERATION + "/" + user.getJurisdiction() + '/passwd"'; //specify passwd file location.
         cmd += " -fn " + process.env.FEDERATION + " "; //define the federation
@@ -116,13 +121,19 @@ function DACSAdapter(proc) {
 
             //if the returned code is null, authentication was a success, otherwise auth failed.
 
+            logger.warn(code);
+            logger.success(stdout);
+            logger.error(stderr);
+
             if (code) {
 
                 return next(codes.AUTH_FAILED, null);
 
             } else {
 
-                //we can now populate the user object with private data.
+                //roles (if any) should be in stdout, they should be parsable csv.
+
+
 
                 return next(null, user);
 
@@ -146,6 +157,12 @@ function DACSAdapter(proc) {
 
         }
 
+        if (!process.env.ROLEFILE) {
+
+            return false;
+
+        }
+
         if (!(next instanceof Function) || !next || next.length !== 2) {
 
             throw new CallbackInvalidError("DACSAdapter.getUser(user, next) precondition failed, argument next must be a function with 2 arguments.");
@@ -156,14 +173,28 @@ function DACSAdapter(proc) {
     };
 
     /**
-     * @param user { User }
-     * @param next { Function }
+     * @param user { User } The user object to fetch roles for.
+     * @param next { Function } The callback function, takes 2 arguments, has signature: next(err, result).
      */
     var getRoles = function (user, next) {
 
-        //TODO: Implement Me 
+    };
+
+    var getRolesPrecondition  = function (user, next) {
+
+        if (!user || !user.isWellFormed()) {
+
+            return false;
+
+        } else if (!next || !(next instanceof Function) || next.length !== 2) {
+
+            throw new CallbackInvalidError("DACSAdapter.getRoles(user, next) precondition failed, argument next must be a function with 2 args");
+        }
+
+        return true;
 
     };
+
 
     /**
      * @documentation returns a cookie based on the user and extra properties
@@ -191,8 +222,10 @@ function DACSAdapter(proc) {
     };
 
     proc.getUserPrecondition    = getUserPrecondition;
+    proc.getRolesPrecondition = getRolesPrecondition;
     proc.doDacsAuth             = doDacsAuth;
     proc.doDacsFetchPrivateData = doDacsFetchPrivateData;
+
 
     that.getUser      = getUser;
     that.getRoles     = getRoles;

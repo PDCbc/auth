@@ -18,6 +18,15 @@ module.exports.ERR_FAILED_TO_AUTHENTICATE = "ERR_FAILED_TO_AUTHENTICATE_USER";
 
 
 //General Error Codes
+
+//Failed precondition
 module.exports.ERR_FAILED_PRECONDITION = "ERR_FAILED_PRECONDITION";
+
+//Authentication failed
+module.exports.AUTH_FAILED = "AUTH_FAILED";
+
+module.exports.FETCH_PRIVATE_DATA_FAILED = "FETCH_PRIVATE_DATA_FAILED";
+
+
 
 

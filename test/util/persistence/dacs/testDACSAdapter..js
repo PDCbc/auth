@@ -103,7 +103,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should throw an error if a function is not provided. ", function (done) {
+        it("should throw an codes if a function is not provided. ", function (done) {
 
             var u = new User("name", "pass", "juri");
 
@@ -115,7 +115,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should throw an error if a function with the wrong number of args is provided", function (done) {
+        it("should throw an codes if a function with the wrong number of args is provided", function (done) {
 
             var u = new User("name", "pass", "juri");
 
@@ -128,7 +128,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should throw an error if something that is not a function is passed as next", function (done) {
+        it("should throw an codes if something that is not a function is passed as next", function (done) {
 
             var u = new User("name", "pass", "juri");
 

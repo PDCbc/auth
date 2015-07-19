@@ -5,7 +5,7 @@
  */
 
 var Action                 = require('./Action').Action;
-var error                  = require("../../util/error/ErrorCodes");
+var error = require("../../util/Codes");
 var User                   = require("../../model/User").User;
 var UserPersistenceManager = require("../../util/persistence/UserPersistenceManager").UserPersistenceManager;
 var logger                 = require('../../util/logger/Logger').Logger("AuthenticateAction");
@@ -31,7 +31,7 @@ function AuthenticateAction(user, proc) {
      * @param next { Function } - called when the action is complete. Has signature next(err, result).
      *  If the authentication succeeds the err will be null and result will be the User object.
      *  If the authentication action fails the erro will be set, and result will be null.
-     *  See ErrorCodes.js for descriptions of error codes.
+     *  See Codes.js for descriptions of codes codes.
      *
      *  @return { null } - returns via the next parameter function.
      */
@@ -45,9 +45,8 @@ function AuthenticateAction(user, proc) {
 
         proc.upm.populate(proc.user, function (err, result) {
 
-            logger.success("populateResponse()" + err);
-
             next(err, result);
+
         });
 
     };

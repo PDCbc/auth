@@ -44,7 +44,7 @@ describe("ExternalProgram", function () {
 
         });
 
-        it("should throw an error for no input string", function (done) {
+        it("should throw an codes for no input string", function (done) {
 
             assert.throws(function () {
                     proc.sanitizeInput(null);

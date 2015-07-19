@@ -8,7 +8,7 @@
 
 var ExternalProgram      = require('./ExternalProgram').ExternalProgram;
 var CallbackInvalidError = require("../error/CallbackInvalidError").CallbackInvalidError;
-var error                = require("../error/ErrorCodes.js");
+var error = require("../Codes.js");
 var cp                   = require("child_process");
 var logger               = require("../logger/Logger").Logger("UnixCommandLine");
 

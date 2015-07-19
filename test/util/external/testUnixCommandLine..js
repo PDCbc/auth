@@ -7,7 +7,7 @@
 var assert               = require('assert');
 var UnixCommandLine      = require('../../../src/util/external/UnixCommandLine').UnixCommandLine;
 var CallbackInvalidError = require("../../../src/util/error/CallbackInvalidError").CallbackInvalidError;
-var error = require("../../../src/util/error/ErrorCodes");
+var error = require("../../../src/util/Codes");
 
 describe("UnixCommandLine", function () {
 

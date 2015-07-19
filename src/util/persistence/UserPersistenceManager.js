@@ -10,7 +10,7 @@ var DACSAdapter        = require("./dacs/DACSAdapter").DACSAdapter;
 var CallbackInvalidError = require("../error/CallbackInvalidError").CallbackInvalidError;
 var logger             = require("../logger/Logger").Logger("UserPersistenceManager");
 var util               = require('util');
-var error              = require('../error/ErrorCodes.js');
+var error              = require('../Codes.js');
 
 function UserPersistenceManager(proc) {
 
@@ -28,7 +28,7 @@ function UserPersistenceManager(proc) {
      * @param next {Function} Called when the cookie generation is complete, has signature next(err, result).
      *  If cookie generation was successful err will be null, result will contain a UserCookie object.
      *  If cookie generation failed err will contain a code, the result will be null;
-     *  See defintions of error codes in ErrorCodes.js
+     *  See defintions of codes codes in Codes.js
      */
     var asCookie = function (user, next) {
 
@@ -47,8 +47,8 @@ function UserPersistenceManager(proc) {
      * @param user { User } The user to popluate from the access control system.
      * @param next { Function } Called when the population is complete, has signature next(err, result).
      *  If population was successful, err will be null, result will contain the User object.
-     *  If population failed, err will contain an error code, result will be null.
-     *  See defintions of error codes in ErrorCodes.js
+     *  If population failed, err will contain an codes code, result will be null.
+     *  See defintions of codes codes in Codes.js
      */
     var populate = function (user, next) {
 
@@ -65,6 +65,15 @@ function UserPersistenceManager(proc) {
         proc.acs.getUser(user, function (err, result) {
 
             //handle response from the AccessControlSystem.
+
+            if (err) {
+
+                next(err, null);
+
+            } else {
+
+                next(null, result);
+            }
 
         });
 

@@ -6,7 +6,7 @@
  */
 
 var logger             = require("../../util/logger/Logger").Logger("LoginAction");
-var error              = require("../../util/error/ErrorCodes");
+var error = require("../../util/Codes");
 var Action             = require('./Action').Action;
 var User               = require("../../model/User").User;
 var AuthenticateAction = require("./AuthenticateAction").AuthenticateAction;
@@ -36,7 +36,7 @@ function LoginAction(username, password, juri, req, proc) {
      * @param next {Function} - to call when the action is complete. Has signature: next(err, result).
      *  If the authentication action was successful, the err will be null and result will contain a UserCookie object.
      *  If the authentication action failed the result will be null and the err will be set.
-     *  See ErrorCodes.js for error definitions.
+     *  See Codes.js for codes definitions.
      */
     var doAction = function (next) {
 
@@ -60,7 +60,7 @@ function LoginAction(username, password, juri, req, proc) {
     /**
      * The callback to handle the response from the AuthenicateAction.doAction call.
      *
-     * @param err {String} - An error code, null if the auth action succeeds.
+     * @param err {String} - An codes code, null if the auth action succeeds.
      * @param result {User} - The user object that was authenticated, null if auth action fails.
      */
     var handleAuthActionResponse = function (err, result) {
@@ -71,7 +71,7 @@ function LoginAction(username, password, juri, req, proc) {
 
             //Authentication failed.
 
-            //TODO: switch on different error codes.
+            //TODO: switch on different codes codes.
 
             proc.callback(err, null);
 

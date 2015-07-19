@@ -592,7 +592,7 @@ function unbakeCookie(cookie, next) {
 
             if (code !== 0) {
 
-                //logger.warn("code was: "+ code+ "  error: "+ String(stderr));
+                //logger.warn("code was: "+ code+ "  codes: "+ String(stderr));
                 //likely means that authentication failed due to credentials 
                 return next(401, null);
 

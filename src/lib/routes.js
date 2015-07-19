@@ -16,7 +16,7 @@ var VerifyController = require("../controller/VerifyController").VerifyControlle
 /**
  * Sets up the standard routes for the application. Check the express documentation on routers.
  *
- * @param {Function} next The async callback. Signature (error, result)
+ * @param {Function} next The async callback. Signature (codes, result)
  * @param {Object} data Contains results of the `models` and `httpd` task.
  */
 function routes(next, data) {

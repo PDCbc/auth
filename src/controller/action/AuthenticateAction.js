@@ -4,9 +4,11 @@
  * Description: Determines whether the indicated user (identified by a username and password) is valid.
  */
 
-var Action = require('Action');
-var error  = require("../../util/error/ErrorCodes");
-var User   = require("../../model/User").User;
+var Action                 = require('./Action').Action;
+var error                  = require("../../util/error/ErrorCodes");
+var User                   = require("../../model/User").User;
+var UserPersistenceManager = require("../../util/persistence/UserPersistenceManager").UserPersistenceManager;
+var logger                 = require('../../util/logger/Logger').Logger("AuthenticateAction");
 
 function AuthenticateAction(user, proc) {
 
@@ -41,6 +43,13 @@ function AuthenticateAction(user, proc) {
 
         }
 
+        proc.upm.populate(proc.user, function (err, result) {
+
+            logger.success("populateResponse()" + err);
+
+            next(err, result);
+        });
+
     };
 
 
@@ -67,9 +76,8 @@ function AuthenticateAction(user, proc) {
 
     };
 
-    that.AuthenticationAction = AuthenticationAction;
-    that.doAction             = doAction;
-    proc.actionPreCondition   = actionPreCondition;
+    that.doAction           = doAction;
+    proc.actionPreCondition = actionPreCondition;
 
     return that;
 

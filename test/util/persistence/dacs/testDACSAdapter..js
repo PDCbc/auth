@@ -16,6 +16,8 @@ describe("DACSAdapter", function () {
     var proc = {};
     var dacs = null;
 
+    process.env.FEDERATION = "someFed";
+
     beforeEach(function (done) {
 
         dacs = DACSAdapter(proc);

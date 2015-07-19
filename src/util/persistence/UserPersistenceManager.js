@@ -4,11 +4,13 @@
  * Description: Handles persistence of user objects within the AccessControlSystem.
  */
 
-var PersistenceManager = require('PersistenceManager').PersistenceManager;
-var User        = require('User');
-var DACSAdapter = require("dacs/DACSAdapter").DACSAdapter;
-
+var PersistenceManager = require('./PersistenceManager').PersistenceManager;
+var User               = require('../../model/User').User;
+var DACSAdapter        = require("./dacs/DACSAdapter").DACSAdapter;
 var CallbackInvalidError = require("../error/CallbackInvalidError").CallbackInvalidError;
+var logger             = require("../logger/Logger").Logger("UserPersistenceManager");
+var util               = require('util');
+var error              = require('../error/ErrorCodes.js');
 
 function UserPersistenceManager(proc) {
 
@@ -57,6 +59,8 @@ function UserPersistenceManager(proc) {
         }
 
         //if we get to here we know that we have satisfied all preconditions.
+
+        logger.success("populate()" + util.inspect(user));
 
         proc.acs.getUser(user, function (err, result) {
 

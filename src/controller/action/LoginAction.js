@@ -10,6 +10,7 @@ var error              = require("../../util/error/ErrorCodes");
 var Action             = require('./Action').Action;
 var User               = require("../../model/User").User;
 var AuthenticateAction = require("./AuthenticateAction").AuthenticateAction;
+var util = require('util');
 
 /**
  * @constructor
@@ -41,10 +42,11 @@ function LoginAction(username, password, juri, req, proc) {
 
         proc.callback = next;
 
-        if (this.actionPreCondition()) {
+        if (proc.actionPreCondition()) {
 
             proc.authAction = AuthenticateAction(proc.user);
 
+            logger.info("doAction() user: " + util.inspect(proc.user));
             proc.authAction.doAction(proc.handleAuthActionResponse);
 
         } else {
@@ -62,6 +64,8 @@ function LoginAction(username, password, juri, req, proc) {
      * @param result {User} - The user object that was authenticated, null if auth action fails.
      */
     var handleAuthActionResponse = function (err, result) {
+
+        logger.info("handleAuthActionResponse(" + err + ")");
 
         if (err && !result) {
 

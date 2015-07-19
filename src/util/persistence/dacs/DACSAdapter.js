@@ -7,8 +7,9 @@
 
 var AccessControlSystem  = require('../AccessControlSystem').AccessControlSystem;
 var CallbackInvalidError = require("../../error/CallbackInvalidError").CallbackInvalidError;
-var error = require("../../error/ErrorCodes");
-var User  = require("../../../model/User").User;
+var error           = require("../../error/ErrorCodes");
+var User            = require("../../../model/User").User;
+var UnixCommandLine = require("../../external/UnixCommandLine").UnixCommandLine;
 
 function DACSAdapter(proc) {
 
@@ -16,11 +17,14 @@ function DACSAdapter(proc) {
 
     var that = AccessControlSystem();
 
+    proc.ucl = UnixCommandLine();
+
     /**
      * @documentation Authenticates the user object, and then populates it with private data from DACS.
      *
      * @precondition userIsValid : The user object that was passed in is well-formed, contains username, password, and juridiction.
      * @precondition callbackIsValid : The next callback is a function that takes 2 arguments.
+     * @precondition federationSet : The federation is set in process.env.FEDERATION
      *
      * @param user  { User } - The user to get we are fetching information for.
      * @param next { Function } - The callback to send the data back in. Has signature next(err, result)
@@ -36,11 +40,38 @@ function DACSAdapter(proc) {
 
         //if we get here we know that we have met all of the preconditions.
 
+        //dacsauth -v -m passwd passwd required -vfs "[passwds]dacs-kwv-fs:/etc/dacs/federations/pdc.dev/TEST/passwd" -fn pdc.dev -fj TEST -u oscar -p oscar
+        var cmd = "dacsauth ";
+
+        cmd += "-v ";  //verbose, set out level to debug
+        cmd += "-m passwd passwd required "; //use password module
+        cmd += ' -vfs "[passwds]dacs-kwv-fs:/etc/dacs/federations/' + process.env.FEDERATION + "/" + user.getJurisdiction() + '/passwd"'; //specify passwd file location.
+        cmd += " -fn " + process.env.FEDERATION + " "; //define the federation
+        cmd += "-fj " + user.getJurisdiction() + " "; //define jurisdiction the user is logging into
+        cmd += "-u " + user.getUsername() + " ";
+        cmd += "-p " + user.getPassword();
+
+        proc.ucl.exec(cmd, null, function (code, stdout, stderr) {
+
+            console.log(code);
+            console.log(stdout);
+            console.log(stderr)
+
+            next();
+
+        });
+
     };
 
     var getUserPrecondition = function (user, next) {
 
         if (!user || !(user instanceof User) || !user.isWellFormed()) {
+
+            return false;
+
+        }
+
+        if (!process.env.FEDERATION) {
 
             return false;
 

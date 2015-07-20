@@ -11,6 +11,7 @@ var codes           = require("../../Codes");
 var User            = require("../../../model/User").User;
 var UnixCommandLine = require("../../external/UnixCommandLine").UnixCommandLine;
 var logger          = require("../../logger/Logger").Logger("DACSAdapter");
+var Role            = require("../../../model/Role").Role;
 
 function DACSAdapter(proc) {
 
@@ -38,7 +39,8 @@ function DACSAdapter(proc) {
 
         if (!proc.getUserPrecondition(user, next)) {
 
-            return next(codes.ERR_FAILED_ACTION_PRECONDITION, null);
+            logger.warn("getUser(User, Function) failed preconditions, returning " + codes.ERR_FAILED_PRECONDITION);
+            return next(codes.ERR_FAILED_PRECONDITION, null);
 
         }
 
@@ -48,11 +50,17 @@ function DACSAdapter(proc) {
 
             if (code === codes.AUTH_FAILED) {
 
+                logger.warn("doDacsAuth.callback(code, result) received authentication failed, returning: " + codes.AUTH_FAILED);
+
                 return next(code, null);
 
             } else {
 
                 proc.doDacsFetchPrivateData(user, function (code, result) {
+
+                    if (code) {
+                        logger.warn("doDacsFetchPrivateData.callback(code, result) received error: " + code + ", returning this code.");
+                    }
 
                     return next(code, result);
 
@@ -74,7 +82,6 @@ function DACSAdapter(proc) {
 
         proc.ucl.exec(cmd, null, function (code, stdout, stderr) {
 
-            var data = null;
 
             if (code !== null) {
 
@@ -83,13 +90,18 @@ function DACSAdapter(proc) {
             } else {
 
                 try {
-                    //private data is stored as JSON strings, we can parse them.
-                    data = JSON.parse(stdout);
 
-                    //augment the user object with the new private data.
-                    user.setClinicianId(data.clinician);
-                    user.setClinic(data.clinic);
-                    return next(null, user);
+                    user = assignPrivateData(user, stdout);
+
+                    if (!user) {
+
+                        return next(codes.FETCH_PRIVATE_DATA_FAILED, null);
+
+                    } else {
+
+                        return next(null, user);
+
+                    }
 
                 } catch (e) {
 
@@ -100,6 +112,36 @@ function DACSAdapter(proc) {
             }
 
         });
+
+    };
+
+    /**
+     * @documentation assigns private data fields that came out of DACS to the user. This method expects private data to be in a JSON string
+     *  with structure like: { "clinician": String, "clinic" : String }. Any other fields will be ignored.
+     *
+     * @param user {User} the user object to added the private data to.
+     * @param stdout {String} the string that will contain the private data, should parsable as JSON.
+     * @returns {User} the user with the private data fields added. If parsing private data fails or the private data is incomplete, null is returned.
+     */
+    var assignPrivateData = function (user, stdout) {
+
+        try {
+
+            //private data is stored as JSON strings, we can parse them.
+            var data = JSON.parse(stdout);
+
+            //augment the user object with the new private data.
+            user.setClinicianId(data.clinician);
+            user.setClinic(data.clinic);
+
+            return user;
+
+        } catch (e) {
+
+            return null;
+
+        }
+
 
     };
 
@@ -131,16 +173,110 @@ function DACSAdapter(proc) {
 
             } else {
 
-                //roles (if any) should be in stdout, they should be parsable csv.
+                try {
+
+                    //roles (if any) should be in stdout, they should be parsable csv.
+
+                    var roles = proc.generateRoles();  //returns an array of Role objects.
+
+                    user = proc.assignRoles(user, roles); //pushes the roles into the user object.
+
+                    if (!user) {
+
+                        return next(codes.FETCH_ROLES_FAILED, null);
+
+                    } else {
+
+                        return next(null, user);
+
+                    }
 
 
+                } catch (e) {
 
-                return next(null, user);
+                    return next(codes.FETCH_ROLES_FAILED, null);
+
+                }
+
 
             }
 
         });
 
+    };
+
+    /**
+     * @documentation parses a CSV string of roles and generates Role objects.
+     *
+     * @param roleString {String} the comma separated string of roles.
+     * @returns {Array} - Returns an Array of Role objects. Returns null if there was failure to parse.
+     */
+    var generateRoles = function (roleString) {
+
+        //check for invalid input types.
+        if (!roleString || typeof roleString !== "string") {
+            return null;
+        }
+
+        //check for illegal characters, if we detect them, return null.
+        if (roleString.match("\n|\r")) {
+            return null;
+        }
+
+        //check for the empty string, this is a special case; they have no roles.
+        if (roleString === "") {
+            return [];
+        }
+
+        var roles    = null;
+        var toReturn = [];
+
+        try {
+
+            roles = roleString.split(",");
+
+        } catch (e) {
+
+            logger.error("generateRoles(String) failed to parse roles: " + e);
+            return null;
+
+        }
+
+        //loop over string and generate role objects.
+        for (var r = 0; r < roles.length; r++) {
+
+            toReturn.push(new Role(roles[r]))
+
+        }
+
+        return toReturn;
+
+    };
+
+    /**
+     *
+     * @documentation Assigns the role objects in roles to the user.
+     *
+     * @param user {User} A user object to assign the roles to.
+     * @param roles {Array}  An array of roles to assign to the user.
+     * @returns {User} The user object that has its roles added. Returns null if the role could not assigned.
+     */
+    var assignRoles = function (user, roles) {
+
+        if (!user || !(user instanceof User) || !roles || !(roles instanceof Array)) {
+
+            logger.warn("assignRoles(User, Array) recieved invalid input objects, returning null.");
+            return null;
+
+        }
+
+        for (var r = 0; r < roles.length; r++) {
+
+            user.addRole(roles[r]);
+
+        }
+
+        return user;
     };
 
     var getUserPrecondition = function (user, next) {
@@ -180,7 +316,7 @@ function DACSAdapter(proc) {
 
     };
 
-    var getRolesPrecondition  = function (user, next) {
+    var getRolesPrecondition = function (user, next) {
 
         if (!user || !user.isWellFormed()) {
 
@@ -205,7 +341,7 @@ function DACSAdapter(proc) {
      */
     var getCookie = function (user, props, next) {
 
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
@@ -217,7 +353,7 @@ function DACSAdapter(proc) {
      */
     var unbakeCookie = function (cookieString, next) {
 
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
@@ -225,6 +361,9 @@ function DACSAdapter(proc) {
     proc.getRolesPrecondition = getRolesPrecondition;
     proc.doDacsAuth             = doDacsAuth;
     proc.doDacsFetchPrivateData = doDacsFetchPrivateData;
+    proc.assignRoles = assignRoles;
+    proc.generateRoles = generateRoles;
+    proc.assignPrivateData = assignPrivateData;
 
 
     that.getUser      = getUser;

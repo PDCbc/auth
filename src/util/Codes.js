@@ -31,6 +31,9 @@ module.exports.FETCH_PRIVATE_DATA_FAILED = "FETCH_PRIVATE_DATA_FAILED";
 //Invalid User object was received.
 module.exports.INVALID_USER = "INVALID_USER";
 
+//Fetching roles from the access control system failed
+module.exports.FETCH_ROLES_FAILED = "FETCH_ROLES_FAILED";
+
 
 
 

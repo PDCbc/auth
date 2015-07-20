@@ -12,6 +12,7 @@ var User            = require("../../../model/User").User;
 var UnixCommandLine = require("../../external/UnixCommandLine").UnixCommandLine;
 var logger          = require("../../logger/Logger").Logger("DACSAdapter");
 var Role            = require("../../../model/Role").Role;
+var util            = require('util');
 
 function DACSAdapter(proc) {
 
@@ -48,9 +49,9 @@ function DACSAdapter(proc) {
 
         proc.doDacsAuth(user, function (code, result) {
 
-            if (code === codes.AUTH_FAILED) {
+            if (code) {
 
-                logger.warn("doDacsAuth.callback(code, result) received authentication failed, returning: " + codes.AUTH_FAILED);
+                logger.warn("doDacsAuth.callback(code, result) received authentication failed, returning: " + code);
 
                 return next(code, null);
 
@@ -233,12 +234,13 @@ function DACSAdapter(proc) {
 
                     //roles (if any) should be in stdout, they should be parsable csv.
 
-                    var roles = proc.generateRoles(stdout);  //returns an array of Role objects.
+                    var roles = proc.generateRoles(stdout.trim());  //returns an array of Role objects.
 
                     user = proc.assignRoles(user, roles); //pushes the roles into the user object.
 
                     if (!user) {
 
+                        logger.warn("doDacsAuth(user, next) got null user back from assignRoles(user, roles), returning FETCH_ROLES_FAILED");
                         return next(codes.FETCH_ROLES_FAILED, null);
 
                     } else {

@@ -71,7 +71,7 @@ function LoginAction(username, password, juri, req, proc) {
 
             //Authentication failed. Pass back to the parent.
 
-            logger.warn("handleAuthActionResponse(" + err + ")");
+            logger.warn("handleAuthActionResponse(err, result) got an error, returning: " + err);
 
             return proc.callback(err, null);
 
@@ -83,6 +83,8 @@ function LoginAction(username, password, juri, req, proc) {
             if (result instanceof User && result.isComplete()) {
 
                 //TODO: create GetCookieAction and call its doAction() method
+
+                logger.success(util.inspect(result));
 
                 //change me later.
                 return proc.callback(null, result)

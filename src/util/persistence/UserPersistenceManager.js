@@ -61,8 +61,6 @@ function UserPersistenceManager(proc) {
 
         //if we get to here we know that we have satisfied all preconditions.
 
-        logger.success("populate()" + util.inspect(user));
-
         proc.acs.getUser(user, function (err, result) {
 
             //handle response from the AccessControlSystem.

@@ -61,6 +61,10 @@ function AuthController(path, proc) {
                         return res.send(401, {message: "could not obtain private data"});
                         break;
 
+                    case codes.FETCH_ROLES_FAILED:
+                        return res.send(401, {message: "could not fetch roles for user"});
+                        break;
+
                     default:
                         return res.send(500, {message: "unknown error: " + err});
                         break;

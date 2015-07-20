@@ -5,7 +5,7 @@
  *
  */
 
-var Entity = require('Entity');
+var Entity = require('./Entity').Entity;
 
 /**
  *

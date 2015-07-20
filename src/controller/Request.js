@@ -5,17 +5,18 @@
 
 function Request(request, proc) {
 
-    var that = {};
-
     proc = proc || {};
 
-    proc.request = request;
+    var that = {};
+
+    proc.request = request || null;
 
 
     /**
      */
     var getSourceIP = function () {
-        //TODO: Implement Me 
+
+        //TODO: Implement Me
 
     };
 

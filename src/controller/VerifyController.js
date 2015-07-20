@@ -12,7 +12,7 @@ function VerifyController(path, proc) {
 
     proc = proc || {};
 
-    path = path || '/verify';
+    proc.path = path || '/verify';
 
     var that = RouteController(proc.path, proc);
 

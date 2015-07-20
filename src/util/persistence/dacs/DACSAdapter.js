@@ -223,12 +223,6 @@ function DACSAdapter(proc) {
 
             //if the returned code is null, authentication was a success, otherwise auth failed.
 
-            /*
-             logger.warn(code);
-             logger.success(stdout);
-             logger.error(stderr);
-             */
-
             if (code) {
 
                 return next(codes.AUTH_FAILED, null);

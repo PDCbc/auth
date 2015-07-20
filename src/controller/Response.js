@@ -43,6 +43,12 @@ function Response(response, proc) {
 
     };
 
+    var redirect  = function (path) {
+
+        proc.response.redirect("/auth/login");
+
+    };
+
     var sendBadRequest = function (message) {
 
         //HTTP status code for bad request is 400.
@@ -53,6 +59,7 @@ function Response(response, proc) {
 
     that.send           = send;
     that.show           = show;
+    that.redirect = redirect;
     that.sendBadRequest = sendBadRequest;
 
     return that;

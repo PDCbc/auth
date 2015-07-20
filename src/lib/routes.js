@@ -11,6 +11,7 @@ var auth           = require('./auth');
 var RouterFactory    = require("../controller/RouterFactory").RouterFactory;
 var AuthController   = require("../controller/AuthController").AuthController;
 var VerifyController = require("../controller/VerifyController").VerifyController;
+var RootController = require("../controller/RootController").RootController;
 
 
 /**
@@ -26,6 +27,9 @@ function routes(next, data) {
 
     var factory = RouterFactory();
 
+    var rootController = RootController();
+    var rootRouter     = factory.createRouter(rootController);
+
     var authController = AuthController();
     var authRouter     = factory.createRouter(authController);
 
@@ -33,6 +37,7 @@ function routes(next, data) {
     var verifyRouter     = factory.createRouter(verifyController);
 
     mainRouter.use('/auth', authRouter);
+    mainRouter.use('/', rootRouter);
 
     controlRouter.use('/verify', verifyRouter);
 

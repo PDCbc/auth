@@ -687,7 +687,7 @@ describe("DACSAdapter", function () {
         it("should return FETCH_ROLES_FAILED if null stdout is provided", function (done) {
 
             var exec = function (a, b, c) {
-                c(null, null, "bar");
+                c(null, "\nbl\nob\n", "bar");
             };
 
             proc.ucl.exec = exec;

@@ -234,6 +234,8 @@ function DACSAdapter(proc) {
 
                     //roles (if any) should be in stdout, they should be parsable csv.
 
+                    stdout = stdout || "";
+
                     var roles = proc.generateRoles(stdout.trim());  //returns an array of Role objects.
 
                     user = proc.assignRoles(user, roles); //pushes the roles into the user object.

@@ -8,7 +8,8 @@ var assert               = require('assert');
 var DACSAdapter          = require("../../../../src/util/persistence/dacs/DACSAdapter").DACSAdapter;
 var User                 = require("../../../../src/model/User").User;
 var CallbackInvalidError = require("../../../../src/util/error/CallbackInvalidError").CallbackInvalidError;
-var Role = require("../../../../src/model/Role").Role;
+var Role  = require("../../../../src/model/Role").Role;
+var codes = require("../../../../src/util/Codes");
 
 
 describe("DACSAdapter", function () {
@@ -38,6 +39,281 @@ describe("DACSAdapter", function () {
         process.env.ROLEFILE   = null;
 
         done();
+
+    });
+
+    describe("doDacsAuth()", function () {
+
+        var exec = function (cmd, stdin, next) {
+            next("code", "stdout", "sterr");
+        };
+
+        beforeEach(function (done) {
+
+            proc.ucl.exec = exec;
+            done();
+
+        });
+
+        afterEach(function (done) {
+
+            done();
+
+        });
+
+        it("should call UnixCommandLine.exec() for valid input", function (done) {
+
+            var standInFunction = function (cmd, stdin, callback) {
+
+                assert.equal(typeof cmd, "string");
+                assert.equal(stdin, null);
+                assert(callback instanceof Function);
+                assert.equal(callback.length, 3);
+
+                done();
+
+            };
+
+            proc.ucl.exec = standInFunction;
+
+            proc.doDacsAuth(new User("foo", "bar", "baz"), function (x, y) {
+            })
+
+        });
+
+        it("should throw CallbackInvalidError if next is not a function", function (done) {
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"), {})
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next is null", function (done) {
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"), null)
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next is undefined", function (done) {
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"));
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next callback has less than 2 parameters", function (done) {
+
+            var cb = function (a) {
+                //callback function, does nothing
+            };
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"), cb);
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next callback has more than 2 parameters", function (done) {
+
+            var cb = function (a, b, c) {
+                //callback function, does nothing
+            };
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"), cb);
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should return ERR_FAILED_PRECONDITION if user parameter is null", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsAuth(null, cb);
+
+        });
+
+        it("should return ERR_FAILED_PRECONDITION if user parameter is undefined", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsAuth(undefined, cb);
+
+        });
+
+
+        it("should return ERR_FAILED_PRECONDITION if user parameter is not a User", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsAuth({}, cb);
+
+        });
+
+        it("should return ERR_FAILED_PRECONDITION if user parameter is not well-formed", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsAuth(new User("foo", "bin"), cb); //no jursidiction means not well-formed
+
+        });
+
+        it("should return AUTH_FAILED error if code is set on response from exec", function (done) {
+
+            var exec = function (a, b, c) {
+                c(1, "foo", "bar");
+            };
+
+            proc.ucl.exec = exec;
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.AUTH_FAILED);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsAuth(new User("a", "b", "c"), cb);
+
+        });
+
+        it("should return FETCH_ROLES_FAILED if null stdout is provided", function (done) {
+
+            var exec = function (a, b, c) {
+                c(null, null, "bar");
+            };
+
+            proc.ucl.exec = exec;
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.FETCH_ROLES_FAILED);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsAuth(new User("a", "b", "c"), cb);
+
+        });
+
+        it("should catch exceptions generated by helper functions and return FETCH_ROLES_FAILED", function (done) {
+
+            var exec = function (a, b, c) {
+                c(null, null, "bar");
+            };
+
+            var throwsException = function (a) {
+                throw new Error();
+            };
+
+            proc.ucl.exec      = exec;
+            proc.generateRoles = throwsException;
+            proc.assignRoles   = throwsException;
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.FETCH_ROLES_FAILED);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsAuth(new User("a", "b", "c"), cb);
+
+        });
+
+        it("should return a user with roles", function (done) {
+
+            var exec = function (a, b, c) {
+                c(null, "admin,user", "stderr");
+            };
+
+            proc.ucl.exec = exec;
+
+            var cb = function (err, result) {
+
+                assert.equal(err, null);
+                assert(result instanceof User);
+                assert.equal(result.getUsername(), "a");
+                assert.equal(result.getPassword(), "b");
+                assert.equal(result.getJurisdiction(), "c");
+                assert(result.getRoles());
+                assert.equal(result.getRoles().length, 2);
+                assert.equal(result.getRoles()[0].getIdentity(), "admin");
+                assert.equal(result.getRoles()[1].getIdentity(), "user");
+
+                done();
+            };
+
+            proc.doDacsAuth(new User("a", "b", "c"), cb);
+
+        });
+
 
     });
 

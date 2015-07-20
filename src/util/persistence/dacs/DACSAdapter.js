@@ -156,7 +156,32 @@ function DACSAdapter(proc) {
 
     };
 
+    /**
+     * @documentation Executes the dacsauth via the UnixCommandLine interface. dacsauth authenicates a user and returns its roles.
+     *
+     * @precondition userIsValid : The user parameter is a valid User object that is well formed.
+     * @precondition nextIsValid : The next callback function is a function that takes 2 arguments.
+     *
+     * @param user {User} The user object to authenticate
+     * @param next  {Function} the function to call dacsauth is complete, has signature next(err, result).
+     *  If dacsauth successfully authenticates the user err will be null and the result will be the user with roles populated.
+     *  If dacsauth failed, or the roles could not be determined, the err will have an error code and result will be null.
+     *  See Codes.js for error code definitions.
+     */
     var doDacsAuth = function (user, next) {
+
+        if (!next || !(next instanceof Function) || next.length !== 2) {
+
+            throw new CallbackInvalidError("DACSAdapter.doDacsAuth(user, next) requires that next parameter be a function and take 2 arguments.")
+
+        }
+
+        if (!user || !(user instanceof User) || !user.isWellFormed()) {
+
+            logger.warn("doDacsAuth(user, next) received invalid User input for parameter user, returning null.");
+            return next(codes.ERR_FAILED_PRECONDITION, null)
+
+        }
 
         var cmd = "dacsauth "; //authentication command.
 
@@ -174,9 +199,11 @@ function DACSAdapter(proc) {
 
             //if the returned code is null, authentication was a success, otherwise auth failed.
 
+            /*
             logger.warn(code);
             logger.success(stdout);
             logger.error(stderr);
+             */
 
             if (code) {
 
@@ -188,7 +215,7 @@ function DACSAdapter(proc) {
 
                     //roles (if any) should be in stdout, they should be parsable csv.
 
-                    var roles = proc.generateRoles();  //returns an array of Role objects.
+                    var roles = proc.generateRoles(stdout);  //returns an array of Role objects.
 
                     user = proc.assignRoles(user, roles); //pushes the roles into the user object.
 
@@ -202,13 +229,11 @@ function DACSAdapter(proc) {
 
                     }
 
-
                 } catch (e) {
 
                     return next(codes.FETCH_ROLES_FAILED, null);
 
                 }
-
 
             }
 

@@ -136,6 +136,11 @@ function DACSAdapter(proc) {
             //private data is stored as JSON strings, we can parse them.
             var data = JSON.parse(stdout);
 
+            //check that appropriate fields exist
+            if (!data.clinician || !data.clinic) {
+                return null;
+            }
+
             //augment the user object with the new private data.
             user.setClinicianId(data.clinician);
             user.setClinic(data.clinic);

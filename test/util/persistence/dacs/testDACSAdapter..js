@@ -41,8 +41,116 @@ describe("DACSAdapter", function () {
 
     });
 
-    describe("assignPrivateData()", function () {
+    describe("#assignPrivateData()", function () {
 
+        it("should return null if the user parameter is null", function (done) {
+
+            var result = proc.assignPrivateData(null, "foo");
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return null if the user parameter is undefined", function (done) {
+
+            var result = proc.assignPrivateData(undefined, "foo");
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return null if the user parameter is non-User object", function (done) {
+
+            var result = proc.assignPrivateData({}, "foo");
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return null if stdout parameter is null ", function (done) {
+
+            var user   = new User("foo", "bar", "baz");
+            var result = proc.assignPrivateData(user, null);
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return null if stdout parameter is undefined ", function (done) {
+
+            var user   = new User("foo", "bar", "baz");
+            var result = proc.assignPrivateData(user);
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return null if stdout parameter is empty string", function (done) {
+
+            var user   = new User("foo", "bar", "baz");
+            var result = proc.assignPrivateData(user, "");
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return null if stdout parameter is invalid JSON", function (done) {
+
+            var user   = new User("foo", "bar", "baz");
+            var result = proc.assignPrivateData(user, "INVALID JSON");
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return null if clinician is not in private data", function (done) {
+
+            var obj    = {clinic: "Tardis"};
+            var user   = new User("foo", "bar", "baz");
+            var result = proc.assignPrivateData(user, JSON.stringify(obj));
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return null if clinic is not in private data", function (done) {
+
+            var obj    = {clinician: "DoctorWho"};
+            var user   = new User("foo", "bar", "baz");
+            var result = proc.assignPrivateData(user, JSON.stringify(obj));
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return null if neither clinic not clinician are in private data", function (done) {
+
+            var obj    = {someOtherField: "someOtherData"};
+            var user   = new User("foo", "bar", "baz");
+            var result = proc.assignPrivateData(user, JSON.stringify(obj));
+            assert.equal(result, null);
+            done();
+
+        });
+
+        it("should return valid user", function (done) {
+
+            var obj    = {clinician: "DoctorWho", clinic: "Tardis"};
+            var user   = new User("foo", "bar", "baz");
+            var result = proc.assignPrivateData(user, JSON.stringify(obj));
+
+            assert(result instanceof User);
+            assert.equal(result.getUsername(), "foo");
+            assert.equal(result.getPassword(), "bar");
+            assert.equal(result.getJurisdiction(), "baz");
+            assert.equal(result.getClinicianId(), "DoctorWho");
+            assert.equal(result.getClinic(), "Tardis");
+            assert.equal(result.getIdentity(), "DoctorWho");
+            assert.deepEqual(result.getRoles(), []); //we have not set any roles yet.
+
+            done();
+
+        });
 
     });
 

@@ -5,6 +5,8 @@
 
 var colors = require('cli-color');
 
+var QUIET = process.env.QUIET || false;
+
 function Logger(path, proc) {
 
     proc = proc || {};
@@ -24,7 +26,7 @@ function Logger(path, proc) {
      */
     var info = function (s) {
 
-        console.log(colors.white(proc.prepareOutput("INFO", s)));
+        if (!QUIET) console.log(colors.white(proc.prepareOutput("INFO", s)));
     };
 
 
@@ -32,7 +34,7 @@ function Logger(path, proc) {
      * @param s {String}
      */
     var warn = function (s) {
-        console.log(colors.yellow(proc.prepareOutput("WARNING", s)));
+        if (!QUIET) console.log(colors.yellow(proc.prepareOutput("WARNING", s)));
     };
 
 
@@ -40,7 +42,7 @@ function Logger(path, proc) {
      * @param s {String}
      */
     var error = function (s) {
-        console.log(colors.red(proc.prepareOutput("ERROR", s)));
+        if (!QUIET) console.log(colors.red(proc.prepareOutput("ERROR", s)));
     };
 
 
@@ -48,7 +50,7 @@ function Logger(path, proc) {
      * @param s {String}
      */
     var success = function (s) {
-        console.log(colors.green(proc.prepareOutput("SUCCESS", s)));
+        if (!QUIET) console.log(colors.green(proc.prepareOutput("SUCCESS", s)));
     };
 
     proc.prepareOutput = prepareOutput;

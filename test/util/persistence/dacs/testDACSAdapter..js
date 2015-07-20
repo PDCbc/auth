@@ -42,7 +42,7 @@ describe("DACSAdapter", function () {
 
     });
 
-    describe("doDacsAuth()", function () {
+    describe("#doDacsAuth()", function () {
 
         var exec = function (cmd, stdin, next) {
             next("code", "stdout", "sterr");

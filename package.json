@@ -5,8 +5,8 @@
   "main": "init.js",
   "scripts": {
     "start": "node init.js",
-    "test": "istanbul cover _mocha -- --recursive -R spec",
-    "test-coverage": "istanbul cover _mocha -- --recursive -R spec; open coverage/lcov-report/index.html"
+    "test": "QUIET=true istanbul cover _mocha -- --recursive -R spec",
+    "test-coverage": "QUIET=false istanbul cover _mocha -- --recursive -R spec; open coverage/lcov-report/index.html"
   },
   "author": "",
   "license": "GPLv2",

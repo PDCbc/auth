@@ -8,6 +8,7 @@ var UserCookie             = require('../../model/UserCookie').UserCookie;
 var codes                  = require('../../util/Codes');
 var User                   = require("../../model/User").User;
 var UserPersistenceManager = require("../../util/persistence/UserPersistenceManager").UserPersistenceManager;
+var CallbackInvalidError   = require("../../util/error/CallbackInvalidError").CallbackInvalidError;
 
 /**
  * @param req {Request} The request object to use to bake the cookie.
@@ -43,7 +44,7 @@ function GetCookieAction(user, req, proc) {
      */
     var doAction = function (next) {
 
-        if (!proc.actionPreCondition()) {
+        if (!proc.actionPreCondition(next)) {
 
             return next(codes.ERR_FAILED_PRECONDITION, null);
 
@@ -51,6 +52,7 @@ function GetCookieAction(user, req, proc) {
 
         var userCookie = new UserCookie(proc.user, null, proc.request.getSourceIP());
 
+        proc.upm.asCookie(userCookie, proc.handleAsCookieResponse);
 
         return next(null, userCookie);
 
@@ -61,7 +63,13 @@ function GetCookieAction(user, req, proc) {
      *
      * @return  {Boolean} true if all preconditions are satisfied, false otherwise.
      */
-    var actionPreCondition = function () {
+    var actionPreCondition = function (next) {
+
+        if (!next || !(next instanceof Function) || next.length !== 2) {
+
+            throw new CallbackInvalidError("doAction(next) expects a callback function next(err, result) with 2 arguments");
+
+        }
 
         if (!proc.request || !(proc.request.getSourceIP instanceof Function)) {
 

@@ -68,6 +68,7 @@ function AuthController(path, proc) {
                     default:
                         return res.send(500, {message: "unknown error: " + err});
                         break;
+
                 }
 
             } else if (!err && result) { //condition for successful login.

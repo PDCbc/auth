@@ -42,6 +42,12 @@ describe("DACSAdapter", function () {
 
     });
 
+    describe("#doDacsFetchPrivateData", function () {
+
+        //it()
+
+    });
+
     describe("#doDacsAuth()", function () {
 
         var exec = function (cmd, stdin, next) {

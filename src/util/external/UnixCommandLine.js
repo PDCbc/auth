@@ -77,6 +77,7 @@ function UnixCommandLine(proc) {
      * @param stdin {String}
      * @param next {Function}
      */
+    /*istanbul ignore next */
     var execStdin = function (cmd, stdin, next) {
 
         //create the process
@@ -119,6 +120,7 @@ function UnixCommandLine(proc) {
      * @param cmd {String} the command to execute
      * @param next {Function} will be called when execution is done, takes three arguments, has signature next(err, stdout, stderr).
      */
+    /*istanbul ignore next */
     var execOneLine = function (cmd, next) {
 
         //See docs for child_process.exec(): https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback
@@ -154,7 +156,7 @@ function UnixCommandLine(proc) {
             }
         }
 
-        if (!proc || !proc.sanitizeInput || proc.sanitizeInput.length !== 1) {
+        if (!proc.sanitizeInput || proc.sanitizeInput.length !== 1) {
 
             return false;
 

@@ -299,6 +299,26 @@ describe("UnixCommandLine", function () {
 
         });
 
+        it("should return false if the sanitizeInput function is undefined", function (done) {
+
+            delete proc.sanitizeInput;
+            var r = proc.execPreconditions("foo", null, testFun);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false if the sanitizeInput function has wrong number of arguments", function (done) {
+
+            proc.sanitizeInput = function (x, y) {
+                //has to many parameters, should cause a fail.
+            };
+            var r              = proc.execPreconditions("foo", null, testFun);
+            assert.equal(r, false);
+            done();
+
+        });
+
 
     });
 

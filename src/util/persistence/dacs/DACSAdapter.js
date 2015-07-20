@@ -72,6 +72,12 @@ function DACSAdapter(proc) {
 
     };
 
+    /**
+     * @documentation Fetches a user's private data from dacs via the UnixCommandLine interface.
+     *
+     * @param user {User}
+     * @param next {Function}
+     */
     var doDacsFetchPrivateData = function (user, next) {
 
         var cmd = "dacspasswd "; //command to get private data.

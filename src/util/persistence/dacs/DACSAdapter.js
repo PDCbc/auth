@@ -125,6 +125,12 @@ function DACSAdapter(proc) {
      */
     var assignPrivateData = function (user, stdout) {
 
+        if (!user || !(user instanceof User) || !stdout || typeof stdout !== "string") {
+
+            return null;
+
+        }
+
         try {
 
             //private data is stored as JSON strings, we can parse them.
@@ -256,7 +262,7 @@ function DACSAdapter(proc) {
 
         if (!user || !(user instanceof User) || !roles || !(roles instanceof Array)) {
 
-            logger.warn("assignRoles(User, Array) recieved invalid input objects, returning null.");
+            logger.warn("assignRoles(User, Array) received invalid input objects, returning null.");
             return null;
 
         }

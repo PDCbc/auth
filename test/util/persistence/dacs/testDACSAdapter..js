@@ -16,10 +16,11 @@ describe("DACSAdapter", function () {
     var proc = {};
     var dacs = null;
 
-    process.env.FEDERATION = "someFed";
-    process.env.ROLEFILE = "someRoleFile";
 
     beforeEach(function (done) {
+
+        process.env.FEDERATION = "someFed";
+        process.env.ROLEFILE   = "someRoleFile";
 
         proc = {};
         dacs = DACSAdapter(proc);
@@ -33,7 +34,99 @@ describe("DACSAdapter", function () {
         proc = null;
         dacs = null;
 
+        process.env.FEDERATION = null;
+        process.env.ROLEFILE   = null;
+
         done();
+
+    });
+
+    describe("assignPrivateData()", function () {
+
+
+    });
+
+
+    describe("#assignRoles()", function () {
+
+        it("should return null for null user", function (done) {
+
+            var r = proc.assignRoles(null, ["foo"]);
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return null for undefined user", function (done) {
+
+            var r = proc.assignRoles(undefined, ["foo"]);
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return null for user not a User", function (done) {
+
+            var r = proc.assignRoles({}, ["foo"]);
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return null for null roles input", function (done) {
+
+            var u = new User("foo", "bar", "baz");
+            var r = proc.assignRoles(u, null);
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return null for undefined roles input", function (done) {
+
+            var u = new User("foo", "bar", "baz");
+            var r = proc.assignRoles(u);
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return augment user's roles for single role input", function (done) {
+
+            var u     = new User("foo", "bar", "baz");
+            var roles = [new Role("bin")];
+
+            var user = proc.assignRoles(u, roles);
+
+            assert.equal(user.getUsername(), "foo");
+            assert.equal(user.getPassword(), "bar");
+            assert.equal(user.getJurisdiction(), "baz");
+            assert(user.getRoles());
+            assert.equal(user.getRoles().length, 1);
+            assert.equal(user.getRoles()[0].getIdentity(), 'bin');
+
+            done();
+
+        });
+
+        it("should return augment user's roles for multi role input", function (done) {
+
+            var u     = new User("foo", "bar", "baz");
+            var roles = [new Role("bin"), new Role("fob")];
+
+            var user = proc.assignRoles(u, roles);
+
+            assert.equal(user.getUsername(), "foo");
+            assert.equal(user.getPassword(), "bar");
+            assert.equal(user.getJurisdiction(), "baz");
+            assert(user.getRoles());
+            assert.equal(user.getRoles().length, 2);
+            assert.equal(user.getRoles()[0].getIdentity(), 'bin');
+            assert.equal(user.getRoles()[1].getIdentity(), 'fob');
+
+            done();
+
+        });
 
     });
 
@@ -220,6 +313,34 @@ describe("DACSAdapter", function () {
             assert.throws(function () {
                 proc.getUserPrecondition(u, {});
             }, CallbackInvalidError);
+
+            done();
+
+        });
+
+        it("should return false if process.env.FEDERATION is not set", function (done) {
+
+            delete process.env.FEDERATION;
+
+            var u = new User("name", "pass", "juri");
+
+            var r = proc.getUserPrecondition(u, testFunction);
+
+            assert.equal(r, false);
+
+            done();
+
+        });
+
+        it("should return false if process.env.ROLEFILE is not set", function (done) {
+
+            delete process.env.ROLEFILE;
+
+            var u = new User("name", "pass", "juri");
+
+            var r = proc.getUserPrecondition(u, testFunction);
+
+            assert.equal(r, false);
 
             done();
 

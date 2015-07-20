@@ -20,8 +20,7 @@ ControlledEntity.prototype = new Entity();
  * @return  {Array}
  */
 ControlledEntity.prototype.getRoles = function () {
-    throw 'AbstractMethodNotImplementedError';
-
+    return this.roles;
 };
 
 

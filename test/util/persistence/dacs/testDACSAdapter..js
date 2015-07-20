@@ -8,7 +8,7 @@ var assert               = require('assert');
 var DACSAdapter          = require("../../../../src/util/persistence/dacs/DACSAdapter").DACSAdapter;
 var User                 = require("../../../../src/model/User").User;
 var CallbackInvalidError = require("../../../../src/util/error/CallbackInvalidError").CallbackInvalidError;
-var OtherError           = require("../../../../src/util/error/NotImplementedError").NotImplementedError;
+var Role = require("../../../../src/model/Role").Role;
 
 
 describe("DACSAdapter", function () {
@@ -17,9 +17,11 @@ describe("DACSAdapter", function () {
     var dacs = null;
 
     process.env.FEDERATION = "someFed";
+    process.env.ROLEFILE = "someRoleFile";
 
     beforeEach(function (done) {
 
+        proc = {};
         dacs = DACSAdapter(proc);
 
         done();
@@ -28,10 +30,93 @@ describe("DACSAdapter", function () {
 
     afterEach(function (done) {
 
-        proc = {};
+        proc = null;
         dacs = null;
 
         done();
+
+    });
+
+    describe("#generateRoles()", function () {
+
+        it("should return null for null input parameter", function (done) {
+
+            var r = proc.generateRoles(null);
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return null for undefined input parameter", function (done) {
+
+            var r = proc.generateRoles();
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return null for non-string input parameter", function (done) {
+
+            var r = proc.generateRoles(5);
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return null for string with newline", function (done) {
+
+            var r = proc.generateRoles("foo\nbar");
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return empty array for empty string input", function (done) {
+
+            var r = proc.generateRoles("");
+            assert.deepEqual(r, []);
+            done();
+
+        });
+
+        it("should return null for string with carriage return ", function (done) {
+
+            var r = proc.generateRoles("foo\rbar");
+            assert.equal(r, null);
+            done();
+
+        });
+
+        it("should return single Role for string without comma", function (done) {
+
+            var r1 = Role("foo");
+
+            var r = proc.generateRoles("foo");
+
+            assert.equal(r.length, 1);
+            assert(r[0] instanceof Role);
+            assert.equal(r[0].getIdentity(), "foo");
+
+            done();
+
+        });
+
+        it("should return two Roles for string with single comma", function (done) {
+
+            var r1 = Role("foo");
+            var r2 = Role("bar");
+
+            var r = proc.generateRoles("foo,bar");
+
+            assert.equal(r.length, 2);
+            assert(r[0] instanceof Role);
+            assert(r[1] instanceof Role);
+            assert.equal(r[0].getIdentity(), "foo");
+            assert.equal(r[1].getIdentity(), "bar");
+
+            done();
+
+        });
 
     });
 

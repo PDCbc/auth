@@ -214,7 +214,7 @@ function DACSAdapter(proc) {
     var generateRoles = function (roleString) {
 
         //check for invalid input types.
-        if (!roleString || typeof roleString !== "string") {
+        if (roleString === null || roleString === undefined || typeof roleString !== "string") {
             return null;
         }
 
@@ -231,16 +231,7 @@ function DACSAdapter(proc) {
         var roles    = null;
         var toReturn = [];
 
-        try {
-
-            roles = roleString.split(",");
-
-        } catch (e) {
-
-            logger.error("generateRoles(String) failed to parse roles: " + e);
-            return null;
-
-        }
+        roles = roleString.split(",");
 
         //loop over string and generate role objects.
         for (var r = 0; r < roles.length; r++) {

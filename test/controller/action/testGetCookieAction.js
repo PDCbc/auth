@@ -103,6 +103,55 @@ describe("GetCookieAction", function () {
             done();
 
         });
+
+        it("should return false for null upm", function (done) {
+
+            proc.upm = null;
+
+            var r = proc.actionPreCondition();
+
+            assert.equal(r, false);
+
+            done();
+
+        });
+
+        it("should return false for undefined upm", function (done) {
+
+            delete proc.upm;
+
+            var r = proc.actionPreCondition();
+
+            assert.equal(r, false);
+
+            done();
+
+        });
+
+        it("should return false for undefined upm.asCookie()", function (done) {
+
+            delete proc.upm.asCookie;
+
+            var r = proc.actionPreCondition();
+
+            assert.equal(r, false);
+
+            done();
+
+        });
+
+        it("should return false non-function upm.asCookie member", function (done) {
+
+            proc.upm.asCookie = {};
+
+            var r = proc.actionPreCondition();
+
+            assert.equal(r, false);
+
+            done();
+
+        });
+
     });
 
 });

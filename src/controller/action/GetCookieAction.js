@@ -3,10 +3,11 @@
  * Class: GetCookieAction
  */
 
-var Action     = require('./Action').Action;
-var UserCookie = require('../../model/UserCookie').UserCookie;
-var codes      = require('../../util/Codes');
-var User       = require("../../model/User").User;
+var Action                 = require('./Action').Action;
+var UserCookie             = require('../../model/UserCookie').UserCookie;
+var codes                  = require('../../util/Codes');
+var User                   = require("../../model/User").User;
+var UserPersistenceManager = require("../../util/persistence/UserPersistenceManager").UserPersistenceManager;
 
 /**
  * @param req {Request} The request object to use to bake the cookie.
@@ -26,11 +27,14 @@ function GetCookieAction(user, req, proc) {
     proc.request = req || null;
     proc.user    = user || null;
 
+    proc.upm = UserPersistenceManager();
+
     /**
      * @documentation Executes the action. Creates a cookie from the user and request objects that were passed in.
      *
      * @precondition userIsValid : the proc.user object is a valid and well formed user object.
-     * @precondition request : the proc.request object is a valid Request.
+     * @precondition requestIsValid : the proc.request object is a valid Request.
+     * @precondition UserPersistenceManagerIsSet : the proc.upm object is set and has a asCookie() function
      *
      * @param next {Function} the function to call after the action is complete. Has signature next(err, result).
      *  If the cookie is successfully created, the err argument is null and the result will contain a UserCookie object.
@@ -46,6 +50,7 @@ function GetCookieAction(user, req, proc) {
         }
 
         var userCookie = new UserCookie(proc.user, null, proc.request.getSourceIP());
+
 
         return next(null, userCookie);
 
@@ -66,6 +71,9 @@ function GetCookieAction(user, req, proc) {
 
             return false;
 
+        } else if (!proc.upm || !proc.upm.asCookie || !(proc.upm.asCookie instanceof Function)) {
+
+            return false;
         }
 
         return true;

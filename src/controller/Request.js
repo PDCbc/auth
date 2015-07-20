@@ -16,18 +16,9 @@ function Request(request, proc) {
      */
     var getSourceIP = function () {
 
-        //TODO: Implement Me
+        return proc.request.headers['x-forwarded-for'] || proc.request.connection.remoteAddress;
 
     };
-
-
-    /**
-     */
-    var getSourceMAC = function () {
-        //TODO: Implement Me 
-
-    };
-
 
     /**
      */
@@ -56,7 +47,6 @@ function Request(request, proc) {
     };
 
     that.getSourceIP  = getSourceIP;
-    that.getSourceMAC = getSourceMAC;
     that.getQuery     = getQuery;
     that.getParams    = getParams;
     that.getBody = getBody;

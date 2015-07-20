@@ -42,9 +42,363 @@ describe("DACSAdapter", function () {
 
     });
 
+    describe("#getUser", function () {
+
+        it("should return ERR_FAILED_PRECONDITION if user parameter does not satisfy preconditions", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            dacs.getUser(null, cb);
+
+        });
+
+        it("it should return AUTH_FAILED if the code from dacs is AUTH_FAILED", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.AUTH_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            proc.doDacsAuth = function (user, next) {
+
+                next(codes.AUTH_FAILED, null);
+
+            };
+
+            dacs.getUser(new User('a', 'b', 'c'), cb);
+
+        });
+
+        it("should return FETCH_PRIVATE_DATA_FAILED if doDacsFetchPrivateData returns a code", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.FETCH_PRIVATE_DATA_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            proc.doDacsAuth = function (user, next) {
+
+                next(null, user);
+
+            };
+
+            proc.doDacsFetchPrivateData = function (user, next) {
+
+                return next(1, null);
+
+            };
+
+            dacs.getUser(new User('a', 'b', 'c'), cb);
+
+        });
+
+        it("should return a user if doDacsFetchPrivateData is called", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, null);
+                assert(result instanceof User);
+                assert(result.isWellFormed());
+
+                done();
+
+            };
+
+            proc.doDacsAuth = function (user, next) {
+
+                return next(null, user);
+
+            };
+
+            proc.doDacsFetchPrivateData = function (user, next) {
+
+                return next(null, user);
+
+            };
+
+            dacs.getUser(new User('a', 'b', 'c'), cb);
+
+        });
+
+    });
+
     describe("#doDacsFetchPrivateData", function () {
 
-        //it()
+        it("should return valid user object if JSON is correct", function (done) {
+
+            var obj = {"clinician": "DoctorWho", "clinic": "Tardis"};
+
+            var exec = function (a, b, c) {
+                c(null, JSON.stringify(obj), null);
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, null);
+                assert(result instanceof User);
+                assert.equal(result.getUsername(), "a");
+                assert.equal(result.getPassword(), "b");
+                assert.equal(result.getJurisdiction(), "c");
+                assert.equal(result.getClinicianId(), "DoctorWho");
+                assert.equal(result.getIdentity(), "DoctorWho");
+                assert.equal(result.getClinic(), "Tardis");
+
+                done();
+
+            };
+
+            proc.ucl.exec = exec;
+
+            proc.doDacsFetchPrivateData(new User('a', 'b', 'c'), cb);
+
+        });
+
+        it("should catch any exceptions and return FETCH_PRIVATE_DATA_FAILED", function (done) {
+
+            var obj = {"clinician": "DoctorWho", "clinic": "Tardis"};
+
+            //function that generates an error to caught.
+            proc.assignPrivateData = function (a, b) {
+                throw new Error();
+            };
+
+            var exec = function (a, b, c) {
+                c(null, JSON.stringify(obj), null);
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.FETCH_PRIVATE_DATA_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            proc.ucl.exec = exec;
+
+            proc.doDacsFetchPrivateData(new User('a', 'b', 'c'), cb);
+
+        });
+
+        it("should return FETCH_PRIVATE_DATA_FAILED private data is invalid structure", function (done) {
+
+
+            var exec = function (a, b, c) {
+                c(null, "SOME STRING THAT IS INVALID JSON", null);
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.FETCH_PRIVATE_DATA_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            proc.ucl.exec = exec;
+
+            proc.doDacsFetchPrivateData(new User('a', 'b', 'c'), cb);
+
+        });
+
+        it("should return FETCH_PRIVATE_DATA_FAILED if the exec() return code is non-null", function (done) {
+
+            var exec = function (a, b, c) {
+                c(1, null, null);
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.FETCH_PRIVATE_DATA_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            proc.ucl.exec = exec;
+
+            proc.doDacsFetchPrivateData(new User('a', 'b', 'c'), cb);
+
+        });
+
+        it("should call UnixCommandLine.exec()", function (done) {
+
+            var standInFunction = function (cmd, stdin, callback) {
+
+                assert.equal(typeof cmd, "string");
+                assert.equal(stdin, null);
+                assert(callback instanceof Function);
+                assert.equal(callback.length, 3);
+
+                done();
+
+            };
+
+            proc.ucl.exec = standInFunction;
+
+            proc.doDacsFetchPrivateData(new User("foo", "bar", "baz"), function (x, y) {
+                //need a callback, this does nothing...
+            })
+
+        });
+
+        it("should throw CallbackInvalidError if next is not a function", function (done) {
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsFetchPrivateData(new User("foo", "bar", "baz"), {})
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next is null", function (done) {
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsFetchPrivateData(new User("foo", "bar", "baz"), null)
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next is undefined", function (done) {
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsFetchPrivateData(new User("foo", "bar", "baz"));
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next callback has less than 2 parameters", function (done) {
+
+            var cb = function (a) {
+                //callback function, does nothing
+            };
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsFetchPrivateData(new User("foo", "bar", "baz"), cb);
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next callback has more than 2 parameters", function (done) {
+
+            var cb = function (a, b, c) {
+                //callback function, does nothing
+            };
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsFetchPrivateData(new User("foo", "bar", "baz"), cb);
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should return ERR_FAILED_PRECONDITION if user parameter is null", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsFetchPrivateData(null, cb);
+
+        });
+
+        it("should return ERR_FAILED_PRECONDITION if user parameter is undefined", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsFetchPrivateData(undefined, cb);
+
+        });
+
+
+        it("should return ERR_FAILED_PRECONDITION if user parameter is not a User", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsFetchPrivateData({}, cb);
+
+        });
+
+        it("should return ERR_FAILED_PRECONDITION if user parameter is not well-formed", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsFetchPrivateData(new User("foo", "bin"), cb); //no jursidiction means not well-formed
+
+        });
 
     });
 
@@ -84,6 +438,89 @@ describe("DACSAdapter", function () {
 
             proc.doDacsAuth(new User("foo", "bar", "baz"), function (x, y) {
             })
+
+        });
+
+        it("should throw CallbackInvalidError if next is not a function", function (done) {
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"), {})
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next is null", function (done) {
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"), null)
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next is undefined", function (done) {
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"));
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next callback has less than 2 parameters", function (done) {
+
+            var cb = function (a) {
+                //callback function, does nothing
+            };
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"), cb);
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if next callback has more than 2 parameters", function (done) {
+
+            var cb = function (a, b, c) {
+                //callback function, does nothing
+            };
+
+            assert.throws(
+                function () {
+
+                    proc.doDacsAuth(new User("foo", "bar", "baz"), cb);
+
+                },
+                CallbackInvalidError
+            );
+
+            done();
 
         });
 

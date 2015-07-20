@@ -299,6 +299,16 @@ describe("UnixCommandLine", function () {
 
         });
 
+        it("should return true for input that meets preconditions with non-null stdin", function (done) {
+
+            var r = proc.execPreconditions("foo", "someStdin", testFun);
+
+            assert.equal(r, true);
+
+            done();
+
+        });
+
         it("should return false if the sanitizeInput function is undefined", function (done) {
 
             delete proc.sanitizeInput;

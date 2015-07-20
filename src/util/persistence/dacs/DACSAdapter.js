@@ -32,8 +32,8 @@ function DACSAdapter(proc) {
      * @param user  { User } - The user to get we are fetching information for.
      * @param next { Function } - The callback to send the data back in. Has signature next(err, result)
      *  If successfully fetched user information, the err argument will be null and result will contain a User object.
-     *  If failure to fetch user information, the err arugment will have an codes code and result will be null.
-     *  See ErrorCode.js for codes code definitions.
+     *  If failure to fetch user information, the err argument will have an codes code and result will be null.
+     *  See Codes.js for codes code definitions.
      */
     var getUser = function (user, next) {
 
@@ -59,10 +59,15 @@ function DACSAdapter(proc) {
                 proc.doDacsFetchPrivateData(user, function (code, result) {
 
                     if (code) {
-                        logger.warn("doDacsFetchPrivateData.callback(code, result) received error: " + code + ", returning this code.");
-                    }
 
-                    return next(code, result);
+                        logger.warn("doDacsFetchPrivateData.callback(code, result) received error: " + code + ", returning this code.");
+                        return next(codes.FETCH_PRIVATE_DATA_FAILED, null);
+
+                    } else {
+
+                        return next(null, result);
+
+                    }
 
                 });
 
@@ -79,6 +84,19 @@ function DACSAdapter(proc) {
      * @param next {Function}
      */
     var doDacsFetchPrivateData = function (user, next) {
+
+        if (!next || !(next instanceof Function) || next.length !== 2) {
+
+            throw new CallbackInvalidError("DACSAdapter.doDacsAuth(user, next) requires that next parameter be a function and take 2 arguments.")
+
+        }
+
+        if (!user || !(user instanceof User) || !user.isWellFormed()) {
+
+            logger.warn("doDacsAuth(user, next) received invalid User input for parameter user, returning null.");
+            return next(codes.ERR_FAILED_PRECONDITION, null)
+
+        }
 
         var cmd = "dacspasswd "; //command to get private data.
 
@@ -97,7 +115,7 @@ function DACSAdapter(proc) {
 
                 try {
 
-                    user = assignPrivateData(user, stdout);
+                    user = proc.assignPrivateData(user, stdout);
 
                     if (!user) {
 
@@ -206,9 +224,9 @@ function DACSAdapter(proc) {
             //if the returned code is null, authentication was a success, otherwise auth failed.
 
             /*
-            logger.warn(code);
-            logger.success(stdout);
-            logger.error(stderr);
+             logger.warn(code);
+             logger.success(stdout);
+             logger.error(stderr);
              */
 
             if (code) {

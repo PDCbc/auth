@@ -192,8 +192,8 @@ describe("module_name", function () {
 
         it("should return true for inputs that meet preconditions", function(done){
 
-            var r = proc.asCookiePrecondition(new UserCookie(new User('a','b','c'), null, "IP"), testFunction);
-            assert.equal(r, false);
+            var r = proc.asCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, true);
             done()
 
         });

@@ -94,6 +94,8 @@ UserCookie.prototype.isWellFormed = function () {
         return false;
     }
 
+    return true;
+
 };
 
 /**

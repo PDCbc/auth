@@ -404,6 +404,7 @@ function DACSAdapter(proc) {
      * @description returns a cookie based on the user and extra properties
      *
      * @precondition userIsValid : the user parameter is a valid well formed UserCookie object.
+     * @precondition userHasIp   : the user parameter has an IP string accessible via the user.getIP() method.
      * @precondition userHasRoles : the user parameter has non-null roles.
      * @precondition validCallback : the next callback function is of type Function and takes exactly 2 arguments.
      * @precondition federationSet : the federation is available via process.env.FEDERATION
@@ -418,11 +419,12 @@ function DACSAdapter(proc) {
 
         if (!proc.getCookiePrecondition(user, next)) {
 
-            next(codes.ERR_FAILED_PRECONDITION, null);
+            return next(codes.ERR_FAILED_PRECONDITION, null);
         }
 
         proc.doDacsGenerateCookie(user, function (err, result) {
 
+            return next(err, result);
 
         });
 
@@ -464,6 +466,12 @@ function DACSAdapter(proc) {
 
             return false;
 
+        } else if (typeof user.getIP === 'undefined' || !(user.getIP instanceof Function) || !user.getIP() || typeof user.getIP() !== 'string') {
+
+            //FAILS precondition: userHasIp
+
+            return false;
+
         }
 
         //PASSED all preconditions
@@ -475,6 +483,10 @@ function DACSAdapter(proc) {
     var doDacsGenerateCookie = function (user, next) {
 
         var cmd = "dacscookie ";
+
+        cmd += "-u " + process.env.FEDERATION + " ";
+        cmd += ""
+
 
         next(1, null);
 

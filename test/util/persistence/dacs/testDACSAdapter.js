@@ -76,6 +76,45 @@ describe("DACSAdapter", function () {
 
         });
 
+        it("should return false if the method UserCookie.getIP() is not defined", function (done) {
+
+            userCookie.getIP = undefined;
+
+            var r = proc.getCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+
+        it("should return false if the member UserCookie.getIP is not a function", function (done) {
+
+            userCookie.getIP = 5;
+
+            var r = proc.getCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false if the UserCookie.getIP() will return null value", function (done) {
+
+            userCookie.ip = null;
+            var r = proc.getCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false if the UserCookie.getIP() will non-string value", function (done) {
+
+            userCookie.ip = 5;
+            var r = proc.getCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
         it("should return false if the process.env.FEDERATION is undefined", function (done) {
 
             delete process.env.FEDERATION;

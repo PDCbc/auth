@@ -18,7 +18,21 @@ function Response(response, proc) {
     var send = function (status, obj) {
 
         proc.response.status(status);
-        proc.response.json(obj);
+
+        if (obj.respond && obj.cookie) {
+            proc.response.format({
+                json: function () {
+                    proc.response.json(obj)
+                },
+                html: function () {
+                    proc.response.redirect(obj.respond + "?cookie=" + obj.cookie);
+                }
+            });
+        } else {
+
+            proc.response.json(obj);
+
+        }
 
     };
 
@@ -43,9 +57,11 @@ function Response(response, proc) {
 
     };
 
-    var redirect  = function (path) {
+    var redirect = function (path) {
 
-        proc.response.redirect("/auth/login");
+        path = path || '/auth/login';
+
+        proc.response.redirect(path);
 
     };
 
@@ -59,7 +75,7 @@ function Response(response, proc) {
 
     that.send           = send;
     that.show           = show;
-    that.redirect = redirect;
+    that.redirect       = redirect;
     that.sendBadRequest = sendBadRequest;
 
     return that;

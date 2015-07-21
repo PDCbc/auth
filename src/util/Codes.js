@@ -17,6 +17,12 @@ module.exports.ERR_FAILED_ACTION_PRECONDITION = "ERR_FAILED_ACTION_PRECONDITION"
 module.exports.ERR_FAILED_TO_AUTHENTICATE = "ERR_FAILED_TO_AUTHENTICATE_USER";
 
 
+//VerifyAction Error Codes
+
+//used when the IP a request originates from is not the same as the one
+//that generated was decrypted from the cookie.
+module.exports.INCONSISTENT_IP = "INCONSISTENT_IP";
+
 //External Program Error Codes
 
 module.exports.EXTERNAL_PROGRAM_EXEC_FAILED = "EXTERNAL_PROGRAM_EXEC_FAILED";

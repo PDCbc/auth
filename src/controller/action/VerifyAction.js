@@ -57,6 +57,32 @@ function VerifyAction(cookieString, request, proc) {
 
     var handleFromCookieResponse = function (err, result) {
 
+        //we expect that the result is a valid UserCookie object.
+
+        if(err){
+
+            logger.warn("handleFromCookieResponse(String, UserCookie) received an error: "+ err);
+            return proc.callback(err, null);
+
+        }
+
+        //Check that the source IP and the cookie's decrypted IP
+        //line up, if they don't likely got a MiM attack.
+        //respond without any data.
+
+        if(result.getIP() !== proc.req.getSourceIP()){
+
+            logger.warn("handleFromCookieResponse(String, UserCookie) received an IP from cookie that was not consistent with the source IP of the request, returning code: "+codes.INCONSISTENT_IP);
+            return proc.callback(codes.INCONSISTENT_IP, null);
+
+        }else if(!result.isComplete()) {
+
+            logger.warn("handleFromCookieResponse(String, UserCookie) received an incomplete UserCookie object, returning code: " + codes.DECRYPT_COOKIE_FAILED);
+            return proc.callback(codes.DECRYPT_COOKIE_FAILED, null);
+
+        }
+
+        //otherwise, pass any errors or results back up the chain.
         return proc.callback(err, result);
 
     };

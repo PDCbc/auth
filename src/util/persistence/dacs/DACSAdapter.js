@@ -131,6 +131,8 @@ function DACSAdapter(proc) {
 
                 } catch (e) {
 
+                    logger.error(e);
+                    logger.error(e.stack);
                     return next(codes.FETCH_PRIVATE_DATA_FAILED, null);
 
                 }
@@ -581,7 +583,29 @@ function DACSAdapter(proc) {
 
                     proc.doDacsFetchPrivateData(result.getUser(), function (err, result) {
 
-                        return next(err, result);
+
+                        if(err){
+
+                            logger.warn("doDacsDecryptCookie(UserCookie, Function) got an error back from doDacsFetchPrivateData, error was: "+ err);
+                            return next(err, null);
+
+                        }
+
+                        //doDacsFetchPrivateData will return a User object in the result parameter.
+
+                        if(result && (result instanceof User) && result.isComplete()){
+
+                            //update our UserCookie to have the updated User.
+                            userCookie.setUser(result);
+
+                            return next(null, userCookie);
+
+                        }else{
+
+                            logger.warn("doDacsDecryptCookie(UserCookie, Function) got an incomplete User object back from doDacsFetchPrivateData, returning code: "+ codes.INVALID_USER);
+                            return next(codes.INVALID_USER, null);
+
+                        }
 
                     });
 
@@ -604,12 +628,7 @@ function DACSAdapter(proc) {
         cmd += "-u " + process.env.FEDERATION + " ";
         cmd += "-decrypt";
 
-        logger.success(cmd);
         proc.ucl.exec(cmd, userCookie.getCookieString(), function (code, stdout, stderr) {
-
-            logger.warn(code);
-            logger.success(stdout);
-            logger.error(stderr);
 
             if (code) {
 

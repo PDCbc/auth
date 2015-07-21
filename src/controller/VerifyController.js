@@ -8,7 +8,7 @@
 var RouteController = require('./RouteController').RouteController;
 var logger          = require("../util/logger/Logger").Logger("VerifyController");
 var util            = require('util');
-var VerifyAction = require("./action/VerifyAction").VerifyAction;
+var VerifyAction    = require("./action/VerifyAction").VerifyAction;
 
 function VerifyController(path, proc) {
 
@@ -27,18 +27,39 @@ function VerifyController(path, proc) {
 
         proc.verifyAction = VerifyAction(req.getCookie(), req);
 
+        proc.verifyAction.doAction(function (err, result) {
 
-        proc.verifyAction.doAction(function(err, result){
+            if (err) {
 
-            //MAKE SURE WE CHECK THE RESULT IP.
+                return res.send(401, {error: err});
 
-            return res.send(200, {error : err, result : result});
+            } else {
+
+                //result is expected to be a UserCookie object.
+                return res.send(200, {
+
+                    cookie: result.getCookieString(),
+                    data  : {
+                        clinician: result.getUser().getClinicianId(),
+                        clinic: result.getUser().getClinic()
+                    }
+
+                });
+
+            }
 
         });
 
     };
 
+    var handleGet = function(req, res){
+
+        return res.redirect("/auth/login");
+
+    };
+
     proc.handlePost = handlePost;
+    proc.handleGet = handleGet;
 
     return that;
 

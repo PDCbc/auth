@@ -83,7 +83,7 @@ function AuthController(path, proc) {
                     cookie   : result.getCookieString(),
                     clinician: result.getUser().getClinicianId(),
                     clinic   : result.getUser().getClinic(),
-                    message : codes.AUTH_SUCCESS
+                    message  : codes.AUTH_SUCCESS
                 };
 
                 return res.send(200, obj);
@@ -102,7 +102,7 @@ function AuthController(path, proc) {
     var handleGet = function (req, res) {
 
         //we just redirect the to the login screen.
-        return res.show("login");
+        return res.show("login", {respond: "/"});
 
     };
 

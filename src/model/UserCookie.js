@@ -6,6 +6,7 @@
  */
 
 var Entity = require('./Entity').Entity;
+var User   = require("./User").User;
 
 /**
  *
@@ -90,7 +91,7 @@ UserCookie.prototype.setUser = function (user) {
  */
 UserCookie.prototype.isWellFormed = function () {
 
-    if (!this.user || !this.user.isWellFormed()) {
+    if (!this.user || !(this.user instanceof User) || !this.user.isWellFormed()) {
         return false;
     }
 

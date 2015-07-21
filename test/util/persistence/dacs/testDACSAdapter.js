@@ -47,14 +47,19 @@ describe("DACSAdapter", function () {
 
         var user       = null;
         var userCookie = null;
+        var role       = null;
 
-        var testFunction = function(x,y){
+        var testFunction = function (x, y) {
             //dummy callback function that takes exactly 2 args.
         };
 
         beforeEach(function (done) {
 
-            user       = new User('a', 'b', 'c');
+            user = new User('a', 'b', 'c');
+            role = new Role('foo');
+
+            user.addRole(role);
+
             userCookie = new UserCookie(user, null, "IP");
 
             done();
@@ -65,6 +70,31 @@ describe("DACSAdapter", function () {
 
             user       = null;
             userCookie = null;
+            role       = null;
+
+            done();
+
+        });
+
+        it("should return false if the process.env.FEDERATION is undefined", function (done) {
+
+            delete process.env.FEDERATION;
+
+            var r = proc.getCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false if the user has null roles", function (done) {
+
+            var u   = new User('a', 'b', 'c');
+            u.roles = null;
+            var uc  = new UserCookie(u, null, "IP");
+
+            var r = proc.getCookiePrecondition(uc, testFunction);
+
+            assert.equal(r, false);
 
             done();
 
@@ -112,7 +142,7 @@ describe("DACSAdapter", function () {
 
             assert.throws(function () {
 
-                var cb = function(x){
+                var cb = function (x) {
                     //function that takes only 1 arg.
                 };
 
@@ -128,7 +158,7 @@ describe("DACSAdapter", function () {
 
             assert.throws(function () {
 
-                var cb = function(x,y,z){
+                var cb = function (x, y, z) {
                     //function that takes only 3 arg.
                 };
 

@@ -403,6 +403,11 @@ function DACSAdapter(proc) {
     /**
      * @description returns a cookie based on the user and extra properties
      *
+     * @precondition userIsValid : the user parameter is a valid well formed UserCookie object.
+     * @precondition userHasRoles : the user parameter has non-null roles.
+     * @precondition validCallback : the next callback function is of type Function and takes exactly 2 arguments.
+     * @precondition federationSet : the federation is available via process.env.FEDERATION
+     *
      * @param user  { UserCookie } the object to generate a cookie for.
      * @param next { Function } the callback to call when we are done generating the cookie, has signature next(err, result).
      *  If cookie generation is successful, err will be null and result will have the populated UserCookie object.
@@ -419,13 +424,12 @@ function DACSAdapter(proc) {
         proc.doDacsGenerateCookie(user, function (err, result) {
 
 
-
         });
 
     };
 
     /**
-     * @description determines if the preconditions for the getCookie() function are satisified.
+     * @description determines if the preconditions for the getCookie() function are satisfied.
      *
      * @throws {CallbackInvalidError} if the next argument is not a function with arity 2.
      *
@@ -438,19 +442,39 @@ function DACSAdapter(proc) {
 
         if (!next || !(next instanceof Function) || next.length !== 2) {
 
+            //FAILS precondition: validCallback.
+
             throw new CallbackInvalidError("DACSAdapter.getCookie(user, next) expects the next argument to be a function with arity 2");
 
         } else if (!user || !(user instanceof UserCookie) || !user.isWellFormed()) {
+
+            //FAILS precondition: userIsValid.
+
+            return false;
+
+        } else if (!process.env.FEDERATION) {
+
+            //FAILS precondition: federationSet.
+
+            return false;
+
+        } else if (!user.getUser().getRoles()) {
+
+            //FAILS precondition: userHasRoles
 
             return false;
 
         }
 
+        //PASSED all preconditions
+
         return true;
 
     };
 
-    var doDacsGenerateCookie = function(user, next){
+    var doDacsGenerateCookie = function (user, next) {
+
+        var cmd = "dacscookie ";
 
         next(1, null);
 

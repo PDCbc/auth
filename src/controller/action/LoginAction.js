@@ -6,12 +6,13 @@
  */
 
 var logger             = require("../../util/logger/Logger").Logger("LoginAction");
-var error = require("../../util/Codes");
+var error              = require("../../util/Codes");
 var Action             = require('./Action').Action;
 var User               = require("../../model/User").User;
 var AuthenticateAction = require("./AuthenticateAction").AuthenticateAction;
-var util  = require('util');
-var codes = require("../../util/Codes.js");
+var GetCookieAction    = require("./GetCookieAction").GetCookieAction;
+var util               = require('util');
+var codes              = require("../../util/Codes.js");
 
 /**
  * @constructor
@@ -28,10 +29,11 @@ function LoginAction(username, password, juri, req, proc) {
 
     var that = Action();
 
-    proc.req        = req;
-    proc.user       = new User(username, password, juri);
-    proc.authAction = null;
-    proc.callback   = null; //to be called when the doAction() is finished.
+    proc.req          = req;
+    proc.user         = new User(username, password, juri);
+    proc.authAction   = null;
+    proc.cookieAction = null;
+    proc.callback     = null; //to be called when the doAction() is finished.
 
     /**
      * @param next {Function} - to call when the action is complete. Has signature: next(err, result).
@@ -82,12 +84,10 @@ function LoginAction(username, password, juri, req, proc) {
             //check that we recieved a valid object back.
             if (result instanceof User && result.isComplete()) {
 
-                //TODO: create GetCookieAction and call its doAction() method
+                //now create and call a GetCookieAction to generate a cookie for the user.
+                proc.cookieAction = GetCookieAction(result, proc.req);
 
-                logger.success(util.inspect(result));
-
-                //change me later.
-                return proc.callback(null, result)
+                return proc.cookieAction.doAction(proc.handleCookieResponse);
 
             } else {
 
@@ -98,6 +98,15 @@ function LoginAction(username, password, juri, req, proc) {
             }
 
         }
+
+    };
+
+    var handleCookieResponse = function(err, result){
+
+        logger.error(err);
+        logger.success(result);
+
+        return proc.callback(err, result);
 
     };
 
@@ -161,6 +170,7 @@ function LoginAction(username, password, juri, req, proc) {
 
     proc.actionPreCondition       = actionPreCondition;
     proc.handleAuthActionResponse = handleAuthActionResponse;
+    proc.handleCookieResponse     = handleCookieResponse;
 
     that.setUser    = setUser;
     that.getUser    = getUser;

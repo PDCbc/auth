@@ -65,6 +65,10 @@ function AuthController(path, proc) {
                         return res.send(401, {message: "could not fetch roles for user"});
                         break;
 
+                    case codes.GET_COOKIE_FAILED:
+                        return res.send(401, {message : "could not generate cookie for user"});
+                        break;
+
                     default:
                         return res.send(500, {message: "unknown error: " + err});
                         break;
@@ -75,7 +79,7 @@ function AuthController(path, proc) {
 
                 //we expect that the result field contains a UserCookie object.
 
-                return res.send(200, {message: "temporary response..."});
+                return res.send(200, result);
             }
 
         });

@@ -34,6 +34,10 @@ module.exports.INVALID_USER = "INVALID_USER";
 //Fetching roles from the access control system failed
 module.exports.FETCH_ROLES_FAILED = "FETCH_ROLES_FAILED";
 
+//Generating cookie from access control system failed
+
+module.exports.GET_COOKIE_FAILED = "GET_COOKIE_FAILED";
+
 
 
 

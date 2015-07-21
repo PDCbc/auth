@@ -42,9 +42,30 @@ function UserPersistenceManager(proc) {
             return next(error.ERR_FAILED_PRECONDITION, null);
         }
 
-        proc.acs.getCookie(userCookie, function(err, result){
+        proc.acs.getCookie(userCookie, function (err, result) {
 
-            //TODO: handle response from getCookie.
+            //we expect result to the UserCookie object.
+
+            if (err) {
+
+                return next(err, null);
+
+            } else {
+
+                if (!result.isComplete()) {
+
+                    logger.info(util.inspect(result));
+                    logger.warn("asCookie() did not get a complete UserCookie object back from AccessControlSystem.getCookie(), returning "+error.GET_COOKIE_FAILED);
+
+                    return next(error.GET_COOKIE_FAILED, null);
+
+                } else {
+
+                    return next(null, result);
+
+                }
+
+            }
 
         });
 

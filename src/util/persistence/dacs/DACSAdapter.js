@@ -485,10 +485,61 @@ function DACSAdapter(proc) {
         var cmd = "dacscookie ";
 
         cmd += "-u " + process.env.FEDERATION + " ";
-        cmd += ""
+        cmd += "-ip "+ user.getIP()+" ";
 
+        var roles = user.getUser().getRoles();
 
-        next(1, null);
+        if(roles.length > 0){
+
+            cmd += "-role ";
+
+            for(var r = 0; r < roles.length; r++){
+
+                cmd += roles[r].getName();
+
+                //don't add a comma to thet last role
+                if(r < (roles.length - 1)){
+
+                    cmd += ",";
+
+                }else{
+
+                    cmd += " ";
+
+                }
+
+            }
+
+        }
+
+        cmd += "-user "+ user.getUser().getUsername()+" ";
+
+        proc.ucl.exec(cmd, null, function(code, stdout, stderr){
+
+            if(code){
+
+                logger.warn("doDacsGenerateCookie() code an error code back: "+ code+ ", returning "+codes.GET_COOKIE_FAILED);
+                return next(codes.GET_COOKIE_FAILED, null);
+
+            }else{
+
+                //we expect the cookie to be the string in the stdout
+
+                if(stdout){ //empty string evaluates to false.
+
+                    user.setCookieString(stdout.trim());
+                    return next(null, user);
+
+                }else{
+
+                    logger.warn("doDacsGenerateCookie() did not get valid output from dacscookie, returning "+codes.GET_COOKIE_FAILED);
+                    return next(codes.GET_COOKIE_FAILED, null);
+
+                }
+
+            }
+
+        });
 
     };
 

@@ -61,8 +61,6 @@ function GetCookieAction(user, req, proc) {
 
     var handleAsCookieResponse = function (err, result) {
 
-        //TODO: Handle any errors chekc result.
-
         return proc.callback(err, result);
     };
 

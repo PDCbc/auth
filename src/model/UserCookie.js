@@ -113,11 +113,11 @@ UserCookie.prototype.isComplete = function () {
 
         return false;
 
-    } else if (!this.ip || typeof this.ip !== string) {
+    } else if (!this.ip || typeof this.ip !== "string") {
 
         return false;
 
-    } else if (!this.cookie || typeof this.cookieString !== string) {
+    } else if (!this.cookieString || typeof this.cookieString !== "string") {
 
         return false;
 

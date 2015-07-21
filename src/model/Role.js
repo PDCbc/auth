@@ -30,7 +30,7 @@ Role.prototype.isWellFormed = function () {
 };
 
 /**
- * @documetation this uses the definition of isWellFormed() becuase they are the same for a role.
+ * @documetation this uses the definition of isWellFormed() because they are the same for a role.
  *
  * @returns {boolean} true if the role object is completely specified, false otherwise.
  */

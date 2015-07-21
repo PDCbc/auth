@@ -114,6 +114,13 @@ User.prototype.getPassword = function () {
     return this.password;
 };
 
+User.prototype.setPassword = function(pass){
+    if(pass){
+        this.password = pass;
+    }
+
+};
+
 /**
  * @description Determines if the user object is well formed. This function checks to see whether user has a username, password, and jurisdiction.
  *

@@ -43,6 +43,21 @@ describe("DACSAdapter", function () {
 
     });
 
+    describe("#parseCookieDecryptResult", function(){
+
+        var inputString = 'federation="PDC"\njurisdiction="TEST"\nusername="oscar"\nidentity="PDC::TEST:oscar"\nip_address="10.0.2.2"\nroles="admin,user,bob,cat"\nexpires_secs="1437592528" (Wed Jul 22 19:15:28 2015 UTC)\nauth_style="generated"\nvalid_for="acs"\nversion="1.4"\n';
+
+
+        it("should run something", function(done){
+
+            proc.parseCookieDecryptResult(inputString);
+
+            done()
+
+        });
+
+    });
+
     describe("#getCookiePrecondition()", function () {
 
         var user       = null;

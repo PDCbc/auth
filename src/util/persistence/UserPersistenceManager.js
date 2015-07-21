@@ -55,7 +55,7 @@ function UserPersistenceManager(proc) {
                 if (!result.isComplete()) {
 
                     logger.info(util.inspect(result));
-                    logger.warn("asCookie() did not get a complete UserCookie object back from AccessControlSystem.getCookie(), returning "+error.GET_COOKIE_FAILED);
+                    logger.warn("asCookie() did not get a complete UserCookie object back from AccessControlSystem.getCookie(), returning " + error.GET_COOKIE_FAILED);
 
                     return next(error.GET_COOKIE_FAILED, null);
 
@@ -90,7 +90,7 @@ function UserPersistenceManager(proc) {
 
         if (!proc.populatePrecondition(user, next)) {
 
-            logger.warn("UserPersistenceManager.populate(user, next) : " + error.ERR_FAILED_PRECONDITION);
+            logger.warn("UserPersistenceManager.populate(user, next) failed precondition(s), returning code: " + error.ERR_FAILED_PRECONDITION);
             return next(error.ERR_FAILED_PRECONDITION, null);
 
         }
@@ -119,7 +119,8 @@ function UserPersistenceManager(proc) {
      * @param next { Function }
      */
     var save = function (user, next) {
-        //TODO: Implement Me 
+
+        throw "NotImplementedError";
 
     };
 
@@ -127,18 +128,77 @@ function UserPersistenceManager(proc) {
     /**
      * @description: returns a user object derived from the cookie string with private data filled out.
      *
-     * @param cookie { String }
-     * @param next { Function }
+     * @precondition validUserCookie : the UserCookie object is valid, it must have a cookie string accessible via getCookieString().
+     * @precondition validCallback : the callback function next must have type Function and take exactly 2 arguments.
+     * @precondition accessControlSystem : the proc.acs object must be set.
+     *
+     * @param userCookie { UserCookie } the object that will contain a cookie string to generate a user from
+     * @param next { Function } the callback to call after cookie is unbaked. Has signature next(err, result).
+     *  If getting the user from the cookie was successful, the err will be null and result will contain a fully populated UserCookie object.
+     *  If getting the user from the cookie fails, the err will be set and the result will be null.
+     *  See Codes.js for error code definitions.
      */
-    var fromCookie = function (cookie, next) {
-        //TODO: Implement Me 
+    var fromCookie = function (userCookie, next) {
+
+        if (!proc.fromCookiePrecondition(userCookie, next)) {
+
+            logger.warn("fromCookie(UserCookie, Function) failed the precondition, returning code: " + error.ERR_FAILED_PRECONDITION);
+            next(error.ERR_FAILED_PRECONDITION, null);
+
+        }
+
+        proc.acs.unbakeCookie(userCookie, function(err, result){
+
+            return next(err, result);
+
+        });
+
+
+    };
+
+    /**
+     * @description determines if the preconditions for the fromCookie() method are met. See the JSDoc string for preconditions.
+     *
+     * @throws {CallbackInvalidError} if the callback function next is not a valid function with arity 2.
+     *
+     * @param uc {UserCookie} must check that this is a valid user cookie object and has a cookie string accessible via getCookieString().
+     * @param next {Function} must check that this is a function and has arity 2.
+     *
+     * @return {boolean} true if the preconditions are met, false otherwise.
+     */
+    var fromCookiePrecondition = function (uc, next) {
+
+        if (!next || !(next instanceof Function) || next.length !== 2) {
+
+            //FAILS precondition validCallback.
+
+            throw new CallbackInvalidError("UserPersistenceManager.fromCookie(UserCookie, Function) expects a function argument that takes exactly 2 arguments.");
+
+        } else if (!uc || !(uc instanceof UserCookie || !uc.getCookieString || typeof uc.getCookieString() !== "string" )) {
+
+            //FAILS precondition validUserCookie
+
+            return false;
+
+        } else if (!proc.acs) {
+
+            //FAILS precondition accessControlSystem
+
+            return false;
+
+        }
+
+        //PASSED preconditions
+
+        return true;
 
     };
 
     /**
      */
     var getAllUsers = function () {
-        //TODO: Implement Me 
+
+        throw "NotImplementedError";
 
     };
 
@@ -207,8 +267,9 @@ function UserPersistenceManager(proc) {
 
     };
 
-    proc.populatePrecondition = populatePrecondition;
-    proc.asCookiePrecondition = asCookiePrecondition;
+    proc.populatePrecondition   = populatePrecondition;
+    proc.asCookiePrecondition   = asCookiePrecondition;
+    proc.fromCookiePrecondition = fromCookiePrecondition;
 
     that.UserPersistenceManager = UserPersistenceManager;
     that.asCookie               = asCookie;

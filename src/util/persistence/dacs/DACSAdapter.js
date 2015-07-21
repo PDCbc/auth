@@ -89,13 +89,13 @@ function DACSAdapter(proc) {
 
         if (!next || !(next instanceof Function) || next.length !== 2) {
 
-            throw new CallbackInvalidError("DACSAdapter.doDacsAuth(user, next) requires that next parameter be a function and take 2 arguments.")
+            throw new CallbackInvalidError("DACSAdapter.doDacsFetchPrivateData(user, next) requires that next parameter be a function and take 2 arguments.")
 
         }
 
         if (!user || !(user instanceof User) || !user.isWellFormed()) {
 
-            logger.warn("doDacsAuth(user, next) received invalid User input for parameter user, returning null.");
+            logger.warn("doDacsFetchPrivateData(user, next) received invalid User input for parameter user, returning code" + codes.ERR_FAILED_PRECONDITION);
             return next(codes.ERR_FAILED_PRECONDITION, null)
 
         }
@@ -485,24 +485,24 @@ function DACSAdapter(proc) {
         var cmd = "dacscookie ";
 
         cmd += "-u " + process.env.FEDERATION + " ";
-        cmd += "-ip "+ user.getIP()+" ";
+        cmd += "-ip " + user.getIP() + " ";
 
         var roles = user.getUser().getRoles();
 
-        if(roles.length > 0){
+        if (roles.length > 0) {
 
             cmd += "-role ";
 
-            for(var r = 0; r < roles.length; r++){
+            for (var r = 0; r < roles.length; r++) {
 
                 cmd += roles[r].getName();
 
                 //don't add a comma to thet last role
-                if(r < (roles.length - 1)){
+                if (r < (roles.length - 1)) {
 
                     cmd += ",";
 
-                }else{
+                } else {
 
                     cmd += " ";
 
@@ -512,27 +512,27 @@ function DACSAdapter(proc) {
 
         }
 
-        cmd += "-user "+ user.getUser().getUsername()+" ";
+        cmd += "-user " + user.getUser().getUsername() + " ";
 
-        proc.ucl.exec(cmd, null, function(code, stdout, stderr){
+        proc.ucl.exec(cmd, null, function (code, stdout, stderr) {
 
-            if(code){
+            if (code) {
 
-                logger.warn("doDacsGenerateCookie() code an error code back: "+ code+ ", returning "+codes.GET_COOKIE_FAILED);
+                logger.warn("doDacsGenerateCookie() code an error code back: " + code + ", returning " + codes.GET_COOKIE_FAILED);
                 return next(codes.GET_COOKIE_FAILED, null);
 
-            }else{
+            } else {
 
                 //we expect the cookie to be the string in the stdout
 
-                if(stdout){ //empty string evaluates to false.
+                if (stdout) { //empty string evaluates to false.
 
                     user.setCookieString(stdout.trim());
                     return next(null, user);
 
-                }else{
+                } else {
 
-                    logger.warn("doDacsGenerateCookie() did not get valid output from dacscookie, returning "+codes.GET_COOKIE_FAILED);
+                    logger.warn("doDacsGenerateCookie() did not get valid output from dacscookie, returning " + codes.GET_COOKIE_FAILED);
                     return next(codes.GET_COOKIE_FAILED, null);
 
                 }
@@ -544,26 +544,230 @@ function DACSAdapter(proc) {
     };
 
     /**
-     * @description returns the data elements that were baked into the cookie
+     * @description decrypts a cookie from DACS to find the username, roles, and IP that was used to generate the cookie.
      *
-     * @param cookieString {String}
-     * @param next { Function } returns the data that was baked into the cookie
+     * @precondition validCallback : the callback function next is of type Function and has arity 2.
+     * @precondition validUserCookie : the userCookie parameter is a valid UserCookie object that has the a cookie string accessible via getCookieString().
+     * @precondition dacsInterface : an interface to the dacs program is provided by a UnixCommandLine object accessible via the proc.ucl object.
+     *
+     * @param userCookie {UserCookie} the object that contains a the cookie string to unbake and populate
+     * @param next {Function} to call after unbaking is done. Has signature next(err, result).
+     *  If unbaking is successful, err will be null, result will contain a populated UserCookie object.
+     *  If unbaking fails, err will be set to an error code, result will be null.
+     *  See Codes.js for error code definitions.
      */
-    var unbakeCookie = function (cookieString, next) {
+    var unbakeCookie = function (userCookie, next) {
 
-        //TODO: Implement Me
+        if (!proc.unbakeCookiePrecondition(userCookie, next)) {
+
+            logger.warn("unbakeCookie(UserCookie, Function) failed its precondition(s), returning code: " + codes.ERR_FAILED_PRECONDITION);
+            return next(codes.ERR_FAILED_PRECONDITION, null);
+
+        }
+
+        proc.doDacsDecryptCookie(userCookie, function (err, result) {
+
+            if (err) {
+
+                return next(err, null);
+
+            } else {
+
+                if (!result.isWellFormed()) {
+
+                    return next(codes.DECRYPT_COOKIE_FAILED, null);
+
+                } else {
+
+                    proc.doDacsFetchPrivateData(result.getUser(), function (err, result) {
+
+                        return next(err, result);
+
+                    });
+
+                }
+
+            }
+
+        });
 
     };
 
-    proc.getUserPrecondition    = getUserPrecondition;
-    proc.getRolesPrecondition   = getRolesPrecondition;
-    proc.getCookiePrecondition  = getCookiePrecondition;
-    proc.doDacsAuth             = doDacsAuth;
-    proc.doDacsFetchPrivateData = doDacsFetchPrivateData;
-    proc.doDacsGenerateCookie   = doDacsGenerateCookie;
-    proc.assignRoles            = assignRoles;
-    proc.generateRoles          = generateRoles;
-    proc.assignPrivateData      = assignPrivateData;
+    /**
+     * @description makes a call to dacscookie -decrypt with the information in userCookie.
+     * @param userCookie {UserCookie}
+     * @param next { Function}
+     */
+    var doDacsDecryptCookie = function (userCookie, next) {
+
+        var cmd = "dacscookie ";
+        cmd += "-u " + process.env.FEDERATION + " ";
+        cmd += "-decrypt";
+
+        logger.success(cmd);
+        proc.ucl.exec(cmd, userCookie.getCookieString(), function (code, stdout, stderr) {
+
+            logger.warn(code);
+            logger.success(stdout);
+            logger.error(stderr);
+
+            if (code) {
+
+                return next(codes.DECRYPT_COOKIE_FAILED, null);
+
+            }
+
+            //1. parse stdout
+            var obj = proc.parseCookieDecryptResult(stdout);
+
+            if (!obj) {
+
+                logger.warn("doDacsDecryptCookie(UserCookie, Function) could not parse response from DACS, returning: " + codes.DECRYPT_COOKIE_FAILED);
+                return next(codes.DECRYPT_COOKIE_FAILED, null);
+
+            }
+
+            //2. assign username
+
+            if (!obj.username) {
+
+                logger.warn("doDacsDecryptCookie(UserCookie, Function) did not get a 'username' field back from DACS, returning: " + codes.DECRYPT_COOKIE_FAILED);
+                return next(codes.DECRYPT_COOKIE_FAILED, null);
+            }
+
+            userCookie.getUser().setUsername(obj.username);
+
+            //3. assign juri
+
+            if (!obj.jurisdiction) {
+
+                logger.warn("doDacsDecryptCookie(UserCookie, Function) did not get a 'jurisdiction' field back from DACS, returning: " + codes.DECRYPT_COOKIE_FAILED);
+                return next(codes.DECRYPT_COOKIE_FAILED, null);
+
+            }
+
+            userCookie.getUser().setJurisdiction(obj.jurisdiction);
+
+            //4. assign roles
+
+            if (!obj.roles) {
+
+                logger.warn("doDacsDecryptCookie(UserCookie, Function) did not get a 'roles' field back from DACS, returning: " + codes.DECRYPT_COOKIE_FAILED);
+                return next(codes.DECRYPT_COOKIE_FAILED, null);
+
+            }
+
+            var roles   = proc.generateRoles(obj.roles);
+            var tmpUser = null;
+
+            if (roles) {
+
+                tmpUser = proc.assignRoles(userCookie.getUser(), roles);
+
+                if (tmpUser) {
+
+                    userCookie.setUser(tmpUser);
+
+                } else {
+
+                    logger.warn("doDacsDecryptCookie(UserCookie, Function) could not assign roles to the UserCookie.user object, returning: " + codes.DECRYPT_COOKIE_FAILED);
+                    return next(codes.DECRYPT_COOKIE_FAILED, null);
+
+                }
+
+            } else {
+
+                logger.warn("doDacsDecryptCookie(UserCookie, Function) could generate roles from output of DACS, returning: " + codes.DECRYPT_COOKIE_FAILED);
+                return next(codes.DECRYPT_COOKIE_FAILED, null);
+
+            }
+
+            //we set the password of the user so that the user appears to be well-formed.
+            //this is a bit of a hack, but should not cause any serious issues, since we
+            //shouldn't be handling the password at all, unless we are authenticating the user.
+            userCookie.getUser().setPassword("foobar");
+
+            return next(null, userCookie);
+
+        });
+
+    };
+
+    var parseCookieDecryptResult = function (input) {
+
+        var obj = {};
+
+        input = input.split("\n");
+
+        var tmpKey   = null;
+        var tmpValue = null;
+        var tmp      = null;
+
+        try {
+
+            for (var i = 0; i < input.length; i++) {
+
+                if (input[i]) {
+
+                    tmp         = input[i].split("=");
+                    tmpKey      = tmp[0];
+                    tmpValue    = tmp[1].replace(/"/g, '');
+                    obj[tmpKey] = tmpValue;
+
+                }
+
+            }
+
+        } catch (e) {
+
+            logger.error("parseCookieDecryptResult(String) failed to parse the output, returning null");
+            return null;
+
+        }
+
+        return obj;
+
+    };
+
+    var unbakeCookiePrecondition = function (uc, next) {
+
+        if (!next || !(next instanceof Function) || next.length !== 2) {
+
+            //FAILED precondition validCallback.
+            throw new CallbackInvalidError("DACSAdapter.unbakeCookie(UserCookie, Function) expects the callback function to be of type Function and have arity 2.");
+
+        } else if (!uc || !(uc instanceof UserCookie) || !uc.getCookieString || typeof uc.getCookieString() !== 'string') {
+
+            //FAILED precondition validUserCookie
+
+            return false;
+
+        } else if (!proc.ucl) {
+
+            //FAILED precondition dacsInterface
+
+            return false;
+
+        }
+
+        //PASSED preconditions
+
+        return true;
+
+    };
+
+    proc.getUserPrecondition      = getUserPrecondition;
+    proc.getRolesPrecondition     = getRolesPrecondition;
+    proc.getCookiePrecondition    = getCookiePrecondition;
+    proc.unbakeCookiePrecondition = unbakeCookiePrecondition;
+    proc.doDacsDecryptCookie      = doDacsDecryptCookie;
+    proc.doDacsAuth               = doDacsAuth;
+    proc.doDacsFetchPrivateData   = doDacsFetchPrivateData;
+    proc.doDacsGenerateCookie     = doDacsGenerateCookie;
+    proc.assignRoles              = assignRoles;
+    proc.generateRoles            = generateRoles;
+    proc.assignPrivateData        = assignPrivateData;
+    proc.parseCookieDecryptResult = parseCookieDecryptResult;
 
 
     that.getUser      = getUser;

@@ -7,14 +7,17 @@
 
 var RouteController = require('./RouteController').RouteController;
 var logger          = require("../util/logger/Logger").Logger("VerifyController");
+var util            = require('util');
+var VerifyAction = require("./action/VerifyAction").VerifyAction;
 
 function VerifyController(path, proc) {
 
     proc = proc || {};
 
-    proc.path = path || '/verify';
+    proc.path = path || '/';
 
     var that = RouteController(proc.path, proc);
+
 
     /**
      * @param req { Request }
@@ -22,7 +25,16 @@ function VerifyController(path, proc) {
      */
     var handlePost = function (req, res) {
 
-        res.send(200, "OK");
+        proc.verifyAction = VerifyAction(req.getCookie(), req);
+
+
+        proc.verifyAction.doAction(function(err, result){
+
+            //MAKE SURE WE CHECK THE RESULT IP.
+
+            return res.send(200, {error : err, result : result});
+
+        });
 
     };
 

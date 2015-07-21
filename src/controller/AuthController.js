@@ -82,7 +82,8 @@ function AuthController(path, proc) {
                 var obj = {
                     cookie   : result.getCookieString(),
                     clinician: result.getUser().getClinicianId(),
-                    clinic   : result.getUser().getClinic()
+                    clinic   : result.getUser().getClinic(),
+                    message : codes.AUTH_SUCCESS
                 };
 
                 return res.send(200, obj);

@@ -8,7 +8,7 @@
 
 var ExternalProgram      = require('./ExternalProgram').ExternalProgram;
 var CallbackInvalidError = require("../error/CallbackInvalidError").CallbackInvalidError;
-var error = require("../Codes.js");
+var error                = require("../Codes.js");
 var cp                   = require("child_process");
 var logger               = require("../logger/Logger").Logger("UnixCommandLine");
 
@@ -80,8 +80,13 @@ function UnixCommandLine(proc) {
     /*istanbul ignore next */
     var execStdin = function (cmd, stdin, next) {
 
+        //need to get the program name and the options seperately, spawn takes
+        // spawn(program, [array of options])
+        var command = cmd.split(" ")[0];
+        var opts    = cmd.split(" ").slice(1);
+
         //create the process
-        var c = cp.spawn(cmd);
+        var c = cp.spawn(command, opts);
 
         var stdout = null;
         var stderr = null;
@@ -109,6 +114,14 @@ function UnixCommandLine(proc) {
             //don't handle any codes here, just pass back to
             // the caller, they decide what to do with the result.
             return next(code, stdout, stderr);
+
+        });
+
+        c.on('error', function (err) {
+
+            logger.error(err);
+
+            return next(error.EXTERNAL_PROGRAM_EXEC_FAILED, null, err);
 
         });
 

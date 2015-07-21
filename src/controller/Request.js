@@ -40,16 +40,50 @@ function Request(request, proc) {
      *
      * @returns { Object }
      */
-    var getBody  = function () {
+    var getBody = function () {
 
         return proc.request.body;
 
     };
 
+    /**
+     *
+     * @returns {String}
+     */
+    var getCookie = function () {
+
+        if(proc.request && proc.request.body){
+
+            return proc.request.body.cookie;
+
+        }
+
+    };
+
+    /**
+     * @description determines if the Request object is well formed, specifically that it has an internal request.
+     *
+     * @returns {boolean} returns true if the Request is well formed, false otherwise.
+     */
+    var isWellFormed = function () {
+
+        if (!proc.request) {
+
+            return false;
+
+        } else {
+
+            return true;
+
+        }
+    };
+
     that.getSourceIP  = getSourceIP;
     that.getQuery     = getQuery;
     that.getParams    = getParams;
-    that.getBody = getBody;
+    that.getBody      = getBody;
+    that.isWellFormed = isWellFormed;
+    that.getCookie    = getCookie;
 
     return that;
 

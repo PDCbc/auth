@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-7-18
- * Class: UserPersistenceManager
- * Description: Handles persistence of user objects within the AccessControlSystem.
+ * @class UserPersistenceManager
+ * @description Handles persistence of user objects within the AccessControlSystem.
  */
 
 var PersistenceManager   = require('./PersistenceManager').PersistenceManager;

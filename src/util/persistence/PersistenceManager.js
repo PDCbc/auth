@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-7-18
- * Class: PersistenceManager
- * Description: Interacts with persistence layer for the application. Contains mostly abstract methods.
+ * @class PersistenceManager
+ * @description Interacts with persistence layer for the application. Contains mostly abstract methods.
  *  Should be sub-classed and then methods implemented. This simply defines an interface.
  */
 

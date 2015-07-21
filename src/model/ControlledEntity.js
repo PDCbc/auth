@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-7-18
- * Class: ControlledEntity
- * Description: An entity that has aspects controlled by the system. Ex. groups or users can have their roles controlled.
+ * @class ControlledEntity
+ * @description An entity that has aspects controlled by the system. Ex. groups or users can have their roles controlled.
  */
 
 var Entity = require('./Entity').Entity;

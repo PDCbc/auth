@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-7-17
- * Class: Action
- * Description: Describes a concrete business action to take on the objects within the data model. Controllers should use this interface to trigger the required processes.
+ * @class Action
+ * @description Describes a concrete business action to take on the objects within the data model. Controllers should use this interface to trigger the required processes.
  */
 
 var NotImplementedError = require('../../util/error/NotImplementedError');
@@ -22,7 +22,7 @@ function Action(proc) {
     };
 
     /**
-     * @description: Checks whether the conditions exist to correctly run the action. Must be implemented by each concrete action to check for specifics.
+     * @@description Checks whether the conditions exist to correctly run the action. Must be implemented by each concrete action to check for specifics.
      *
      * @return  {Boolean}
      */

@@ -1,6 +1,6 @@
 /**
  * Generated On: 2015-7-18
- * Class: Role
+ * @class Role
  */
 
 var Entity = require('./Entity').Entity;

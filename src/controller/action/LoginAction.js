@@ -1,8 +1,8 @@
 /**
  * Generated On: 2015-7-17
- * Class: LoginAction
+ * @class LoginAction
  *
- * Description: An action for logging a user into the system. Obtains a cookie that represents the user.
+ * @description An action for logging a user into the system. Obtains a cookie that represents the user.
  */
 
 var logger             = require("../../util/logger/Logger").Logger("LoginAction");

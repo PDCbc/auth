@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-7-18
- * Class: AcessControlSystem
- * Description: Access Control System Adapter abstract class
+ * @class AcessControlSystem
+ * @description Access Control System Adapter abstract class
  */
 
 var logger = require('../logger/Logger').Logger("AccessControlSystem");

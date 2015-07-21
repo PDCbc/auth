@@ -1,6 +1,6 @@
 /**
  * Generated On: 2015-7-17
- * Class: RouteController
+ * @class RouteController
  *
  * An abstract object that defines an interface for other route controller types.
  *
@@ -8,8 +8,8 @@
  * off to concrete RouteController objects.
  */
 
-var Response = require('./Response').Response;
-var Request = require('./Request').Request;
+var Response            = require('./Response').Response;
+var Request             = require('./Request').Request;
 var NotImplementedError = require("../util/error/NotImplementedError").NotImplementedError;
 
 function RouteController(path, proc) {

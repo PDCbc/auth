@@ -1,8 +1,8 @@
 /**
  * Generated On: 2015-7-18
- * Class: DACSAdapter
+ * @class DACSAdapter
  *
- * Description: Adapter to the DACS access control system
+ * @description Adapter to the DACS access control system
  */
 
 var AccessControlSystem  = require('../AccessControlSystem').AccessControlSystem;

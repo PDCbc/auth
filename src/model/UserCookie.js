@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-7-18
- * Class: UserCookie
- * Description: Wraps a user object and provides extra functions cookie management.
+ * @class UserCookie
+ * @description Wraps a user object and provides extra functions cookie management.
  *
  */
 

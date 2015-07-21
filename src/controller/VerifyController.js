@@ -1,6 +1,6 @@
 /**
  * Generated On: 2015-7-17
- * Class: VerifyController
+ * @class VerifyController
  *
  * Handlesw
  */

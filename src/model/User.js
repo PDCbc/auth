@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-7-18
- * Class: User
- * Description: Describes a user object in the system.
+ * @class User
+ * @description Describes a user object in the system.
  */
 
 var util             = require('util');

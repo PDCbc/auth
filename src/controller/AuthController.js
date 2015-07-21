@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-7-17
- * Class: AuthController
- * Description: Allows users to authenticate and obtain cookies.
+ * @class AuthController
+ * @description Allows users to authenticate and obtain cookies.
  */
 
 var util = require('util');

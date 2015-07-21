@@ -1,6 +1,6 @@
 /**
  * Generated On: 2015-7-17
- * Class: InvalidControllerError
+ * @class InvalidControllerError
  */
 
 function InvalidControllerError(message) {

@@ -1,8 +1,8 @@
 /**
  * Generated On: 2015-7-18
- * Class: UnixCommandLine
+ * @class UnixCommandLine
  *
- * Description: An ExternalProgram interface to the the unix command line. Executes commands using node's child_process library.
+ * @description An ExternalProgram interface to the the unix command line. Executes commands using node's child_process library.
  *  Utilizes NodeJS' child_process library: https://nodejs.org/api/child_process.html
  */
 

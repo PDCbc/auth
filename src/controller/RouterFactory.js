@@ -1,6 +1,6 @@
 /**
  * Generated On: 2015-7-17
- * Class: RouterFactory
+ * @class RouterFactory
  *
  * This class (object) is a factory to create express.Router objects from RouteContoller objects.
  */

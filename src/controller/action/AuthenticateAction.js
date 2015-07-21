@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-7-17
- * Class: AuthenticateAction
- * Description: Determines whether the indicated user (identified by a username and password) is valid.
+ * @class AuthenticateAction
+ * @description Determines whether the indicated user (identified by a username and password) is valid.
  */
 
 var Action                 = require('./Action').Action;

@@ -1,8 +1,8 @@
 /**
  * Generated On: 2015-7-18
- * Class: ExternalProgram
+ * @class ExternalProgram
  *
- * Description: An interface to an external program. This abstract class defines which methods should be implemented by sub-classes.
+ * @description An interface to an external program. This abstract class defines which methods should be implemented by sub-classes.
  */
 
 function ExternalProgram(proc) {

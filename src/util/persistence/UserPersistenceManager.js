@@ -4,13 +4,14 @@
  * Description: Handles persistence of user objects within the AccessControlSystem.
  */
 
-var PersistenceManager = require('./PersistenceManager').PersistenceManager;
-var User               = require('../../model/User').User;
-var DACSAdapter        = require("./dacs/DACSAdapter").DACSAdapter;
+var PersistenceManager   = require('./PersistenceManager').PersistenceManager;
+var User                 = require('../../model/User').User;
+var DACSAdapter          = require("./dacs/DACSAdapter").DACSAdapter;
 var CallbackInvalidError = require("../error/CallbackInvalidError").CallbackInvalidError;
-var logger             = require("../logger/Logger").Logger("UserPersistenceManager");
-var util               = require('util');
-var error              = require('../Codes.js');
+var logger               = require("../logger/Logger").Logger("UserPersistenceManager");
+var util                 = require('util');
+var error                = require('../Codes.js');
+var UserCookie           = require("../../model/UserCookie").UserCookie;
 
 function UserPersistenceManager(proc) {
 
@@ -24,15 +25,23 @@ function UserPersistenceManager(proc) {
     /**
      * @documentation creates a Cookie object from the user object and any extra properties that are required.
      *
-     * @param user  {User} Additional properties/parameters to use
+     * @precondition acsSet : The AccessControlSystem (proc.acs) member is set and contains a getCookie() method.
+     * @precondition userCookie : Is a valid UserCookie type and is well-formed.
+     * @precondition callbackValid : the next parameter is a callback function that takes 2 arguments.
+     *
+     * @param userCookie  {UserCookie} The UserCookie object to generate a cookie for.
      * @param next {Function} Called when the cookie generation is complete, has signature next(err, result).
      *  If cookie generation was successful err will be null, result will contain a UserCookie object.
      *  If cookie generation failed err will contain a code, the result will be null;
      *  See defintions of codes codes in Codes.js
      */
-    var asCookie = function (user, next) {
+    var asCookie = function (userCookie, next) {
 
-        //TODO: Implement Me 
+        if (!proc.asCookiePrecondition(userCookie, next)) {
+
+            return next(error.ERR_FAILED_PRECONDITION, null);
+        }
+
 
     };
 
@@ -144,7 +153,35 @@ function UserPersistenceManager(proc) {
 
     };
 
+    /**
+     * @documentation Tests preconditions for hte getCookie(UserCookie, Function) method.
+     *
+     * @param userCookie {UserCookie} The object that will have a cookie generated for it, we must test that it is valid.
+     * @param callback {Function} the callback function that will be called after the userCookie object is populated, must test that it is a function and has arity 2.
+     * @returns {boolean} true if the preconditions are met, false otherwise.
+     */
+    var asCookiePrecondition = function (userCookie, callback) {
+
+        if (!callback || !(callback instanceof Function) || callback.length !== 2) {
+
+            throw new CallbackInvalidError("Precondition for UserPersistenceManager.getCookie() failed, callback next must be a function that takes 2 arguments");
+
+        } else if (!userCookie || !(userCookie instanceof UserCookie) || !userCookie.isWellFormed()) {
+
+            return false;
+
+        } else if (!proc.acs || !proc.acs.getCookie) {
+
+            return false;
+
+        }
+
+        return true;
+
+    };
+
     proc.populatePrecondition = populatePrecondition;
+    proc.asCookiePrecondition = asCookiePrecondition;
 
     that.UserPersistenceManager = UserPersistenceManager;
     that.asCookie               = asCookie;

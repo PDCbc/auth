@@ -46,16 +46,24 @@ function GetCookieAction(user, req, proc) {
 
         if (!proc.actionPreCondition(next)) {
 
-            return next(codes.ERR_FAILED_PRECONDITION, null);
+            return next(codes.ERR_FAILED_ACTION_PRECONDITION, null);
 
         }
 
+        proc.callback = next;  //save this for later.
+
         var userCookie = new UserCookie(proc.user, null, proc.request.getSourceIP());
 
-        proc.upm.asCookie(userCookie, proc.handleAsCookieResponse);
+        return proc.upm.asCookie(userCookie, proc.handleAsCookieResponse);
 
-        return next(null, userCookie);
+    };
 
+
+    var handleAsCookieResponse = function (err, result) {
+
+        //TODO: Handle any errors chekc result.
+
+        return proc.callback(err, result);
     };
 
     /**
@@ -88,8 +96,10 @@ function GetCookieAction(user, req, proc) {
 
     };
 
-    that.doAction           = doAction;
-    proc.actionPreCondition = actionPreCondition;
+    proc.actionPreCondition     = actionPreCondition;
+    proc.handleAsCookieResponse = handleAsCookieResponse;
+
+    that.doAction               = doAction;
 
     return that;
 

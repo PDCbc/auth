@@ -90,7 +90,7 @@ UserCookie.prototype.setUser = function (user) {
  */
 UserCookie.prototype.isWellFormed = function () {
 
-    if (!this.user || !user.isWellFormed()) {
+    if (!this.user || !this.user.isWellFormed()) {
         return false;
     }
 

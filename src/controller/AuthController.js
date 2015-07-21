@@ -9,7 +9,7 @@ var util = require('util');
 var RouteController = require('./RouteController').RouteController;
 var LoginAction     = require("./action/LoginAction").LoginAction;
 var logger          = require("../util/logger/Logger").Logger("AuthController");
-var codes = require("../util/Codes.js");
+var codes           = require("../util/Codes.js");
 
 function AuthController(path, proc) {
 
@@ -66,7 +66,7 @@ function AuthController(path, proc) {
                         break;
 
                     case codes.GET_COOKIE_FAILED:
-                        return res.send(401, {message : "could not generate cookie for user"});
+                        return res.send(401, {message: "could not generate cookie for user"});
                         break;
 
                     default:
@@ -79,7 +79,13 @@ function AuthController(path, proc) {
 
                 //we expect that the result field contains a UserCookie object.
 
-                return res.send(200, result);
+                var obj = {
+                    cookie   : result.getCookieString(),
+                    clinician: result.getUser().getClinicianId(),
+                    clinic   : result.getUser().getClinic()
+                };
+
+                return res.send(200, obj);
             }
 
         });

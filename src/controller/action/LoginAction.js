@@ -138,7 +138,7 @@ function LoginAction(username, password, juri, req, proc) {
 
 
     /**
-     * @documentation Determines whether the appropriate conditions exist for the action to executed.
+     * @description Determines whether the appropriate conditions exist for the action to executed.
      *
      * @return {Boolean} - true if all preconditions are met, false otherwise.
      */

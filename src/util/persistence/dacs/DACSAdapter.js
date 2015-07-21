@@ -7,12 +7,13 @@
 
 var AccessControlSystem  = require('../AccessControlSystem').AccessControlSystem;
 var CallbackInvalidError = require("../../error/CallbackInvalidError").CallbackInvalidError;
-var codes           = require("../../Codes");
-var User            = require("../../../model/User").User;
-var UnixCommandLine = require("../../external/UnixCommandLine").UnixCommandLine;
-var logger          = require("../../logger/Logger").Logger("DACSAdapter");
-var Role            = require("../../../model/Role").Role;
-var util            = require('util');
+var codes                = require("../../Codes");
+var User                 = require("../../../model/User").User;
+var UserCookie           = require("../../../model/UserCookie").UserCookie;
+var UnixCommandLine      = require("../../external/UnixCommandLine").UnixCommandLine;
+var logger               = require("../../logger/Logger").Logger("DACSAdapter");
+var Role                 = require("../../../model/Role").Role;
+var util                 = require('util');
 
 function DACSAdapter(proc) {
 
@@ -23,7 +24,7 @@ function DACSAdapter(proc) {
     proc.ucl = UnixCommandLine();
 
     /**
-     * @documentation Authenticates the user object, and then populates it with private data from DACS.
+     * @description Authenticates the user object, and then populates it with private data from DACS.
      *
      * @precondition userIsValid : The user object that was passed in is well-formed, contains username, password, and juridiction.
      * @precondition callbackIsValid : The next callback is a function that takes 2 arguments.
@@ -79,7 +80,7 @@ function DACSAdapter(proc) {
     };
 
     /**
-     * @documentation Fetches a user's private data from dacs via the UnixCommandLine interface.
+     * @description Fetches a user's private data from dacs via the UnixCommandLine interface.
      *
      * @param user {User}
      * @param next {Function}
@@ -141,7 +142,7 @@ function DACSAdapter(proc) {
     };
 
     /**
-     * @documentation assigns private data fields that came out of DACS to the user. This method expects private data to be in a JSON string
+     * @description assigns private data fields that came out of DACS to the user. This method expects private data to be in a JSON string
      *  with structure like: { "clinician": String, "clinic" : String }. Any other fields will be ignored.
      *
      * @param user {User} the user object to added the private data to.
@@ -182,7 +183,7 @@ function DACSAdapter(proc) {
     };
 
     /**
-     * @documentation Executes the dacsauth via the UnixCommandLine interface. dacsauth authenicates a user and returns its roles.
+     * @description Executes the dacsauth via the UnixCommandLine interface. dacsauth authenicates a user and returns its roles.
      *
      * @precondition userIsValid : The user parameter is a valid User object that is well formed.
      * @precondition nextIsValid : The next callback function is a function that takes 2 arguments.
@@ -264,7 +265,7 @@ function DACSAdapter(proc) {
     };
 
     /**
-     * @documentation parses a CSV string of roles and generates Role objects.
+     * @description parses a CSV string of roles and generates Role objects.
      *
      * @param roleString {String} the comma separated string of roles.
      * @returns {Array} - Returns an Array of Role objects. Returns null if there was failure to parse.
@@ -304,7 +305,7 @@ function DACSAdapter(proc) {
 
     /**
      *
-     * @documentation Assigns the role objects in roles to the user.
+     * @description Assigns the role objects in roles to the user.
      *
      * @param user {User} A user object to assign the roles to.
      * @param roles {Array}  An array of roles to assign to the user.
@@ -328,6 +329,15 @@ function DACSAdapter(proc) {
         return user;
     };
 
+    /**
+     * @description determines if the preconditions for getUser() are met.
+     *
+     * @throws {CallbackInvalidError} when the
+     *
+     * @param user
+     * @param next
+     * @returns {boolean}
+     */
     var getUserPrecondition = function (user, next) {
 
         if (!user || !(user instanceof User) || !user.isWellFormed()) {
@@ -365,6 +375,15 @@ function DACSAdapter(proc) {
 
     };
 
+    /**
+     * @description determines if the preconditions for the getRoles() function are met.
+     *
+     * @throws {CallbackInvalidError} when the next argument is not a function or it does not have arity 2.
+     *
+     * @param user {User} must be a valid well-form User object.
+     * @param next {Function} the callback function, must have arity 2.
+     * @returns {boolean} true if the preconditions for getRoles() are satisfied, false otherwise.
+     */
     var getRolesPrecondition = function (user, next) {
 
         if (!user || !user.isWellFormed()) {
@@ -382,20 +401,55 @@ function DACSAdapter(proc) {
 
 
     /**
-     * @documentation returns a cookie based on the user and extra properties
+     * @description returns a cookie based on the user and extra properties
      *
-     * @param user  { User }
-     * @param props  {Object}
-     * @param next { Function }
+     * @param user  { UserCookie } the object to generate a cookie for.
+     * @param next { Function } the callback to call when we are done generating the cookie, has signature next(err, result).
+     *  If cookie generation is successful, err will be null and result will have the populated UserCookie object.
+     *  If cookie generation fails, err will be set to an error code and result will be null.
+     *  See Codes.js for code definitions.
      */
-    var getCookie = function (user, props, next) {
+    var getCookie = function (user, next) {
 
-        //TODO: Implement Me
+        if (!proc.getCookiePrecondition()) {
+
+            next(codes.ERR_FAILED_PRECONDITION, null);
+        }
+
+        proc.doDacsGetCookie(user, function (err, result) {
+
+        });
 
     };
 
     /**
-     * @documentation returns the data elements that were baked into the cookie
+     * @description determines if the preconditions for the getCookie() function are satisified.
+     *
+     * @throws {CallbackInvalidError} if the next argument is not a function with arity 2.
+     *
+     * @param user {UserCookie}
+     * @param next {Function}
+     *
+     * @returns {boolean} true if the preconditions are satisfied, false otherwise.
+     */
+    var getCookiePrecondition = function (user, next) {
+
+        if (!next || !(next instanceof Function) || next.length !== 2) {
+
+            throw new CallbackInvalidError("DACSAdapter.getCookie(user, next) expects the next argument to be a function with arity 2");
+
+        } else if (!user || !(user instanceof UserCookie) || !user.isWellFormed()) {
+
+            return false;
+
+        }
+
+        return true;
+
+    };
+
+    /**
+     * @description returns the data elements that were baked into the cookie
      *
      * @param cookieString {String}
      * @param next { Function } returns the data that was baked into the cookie
@@ -407,12 +461,13 @@ function DACSAdapter(proc) {
     };
 
     proc.getUserPrecondition    = getUserPrecondition;
-    proc.getRolesPrecondition = getRolesPrecondition;
+    proc.getRolesPrecondition   = getRolesPrecondition;
+    proc.getCookiePrecondition  = getCookiePrecondition;
     proc.doDacsAuth             = doDacsAuth;
     proc.doDacsFetchPrivateData = doDacsFetchPrivateData;
-    proc.assignRoles = assignRoles;
-    proc.generateRoles = generateRoles;
-    proc.assignPrivateData = assignPrivateData;
+    proc.assignRoles            = assignRoles;
+    proc.generateRoles          = generateRoles;
+    proc.assignPrivateData      = assignPrivateData;
 
 
     that.getUser      = getUser;

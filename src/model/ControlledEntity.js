@@ -33,7 +33,7 @@ ControlledEntity.prototype.setRoles = function (roles) {
 };
 
 /**
- * @documentation adds a role to the Entity's list of roles.
+ * @description adds a role to the Entity's list of roles.
  *
  * @precondition validRole : The role input is non-null and is well formed.
  *
@@ -57,7 +57,7 @@ ControlledEntity.prototype.addRole = function (r) {
 
 
 /**
- * @documentation: Removes the specified role (if it exists) from the roles for this entity.
+ * @description: Removes the specified role (if it exists) from the roles for this entity.
  * @param r { Role }
  */
 ControlledEntity.prototype.removeRole = function (r) {

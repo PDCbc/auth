@@ -22,7 +22,7 @@ function Action(proc) {
     };
 
     /**
-     * @documentation: Checks whether the conditions exist to correctly run the action. Must be implemented by each concrete action to check for specifics.
+     * @description: Checks whether the conditions exist to correctly run the action. Must be implemented by each concrete action to check for specifics.
      *
      * @return  {Boolean}
      */

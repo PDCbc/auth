@@ -115,7 +115,7 @@ User.prototype.getPassword = function () {
 };
 
 /**
- * @documentation Determines if the user object is well formed. This function checks to see whether user has a username, password, and jurisdiction.
+ * @description Determines if the user object is well formed. This function checks to see whether user has a username, password, and jurisdiction.
  *
  * @return {Boolean} true if this User is well formed, false otherwise.
  */

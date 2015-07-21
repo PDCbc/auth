@@ -23,7 +23,7 @@ function UserPersistenceManager(proc) {
     proc.acs = DACSAdapter();
 
     /**
-     * @documentation creates a Cookie object from the user object and any extra properties that are required.
+     * @description creates a Cookie object from the user object and any extra properties that are required.
      *
      * @precondition acsSet : The AccessControlSystem (proc.acs) member is set and contains a getCookie() method.
      * @precondition userCookie : Is a valid UserCookie type and is well-formed.
@@ -42,12 +42,18 @@ function UserPersistenceManager(proc) {
             return next(error.ERR_FAILED_PRECONDITION, null);
         }
 
+        proc.acs.getCookie(userCookie, function(err, result){
+
+            //TODO: handle response from getCookie.
+
+        });
+
 
     };
 
 
     /**
-     * @documentation populates a user object with any fields that it may be missing.
+     * @description populates a user object with any fields that it may be missing.
      *
      * @precondition userIsValid : The user object is defined and minimally contains a valid username, password, and jurisdiction.
      * @precondition callbackSet : The response callback (next) is a function that we can pass our response too.
@@ -98,7 +104,7 @@ function UserPersistenceManager(proc) {
 
 
     /**
-     * @documentation: returns a user object derived from the cookie string with private data filled out.
+     * @description: returns a user object derived from the cookie string with private data filled out.
      *
      * @param cookie { String }
      * @param next { Function }
@@ -116,7 +122,7 @@ function UserPersistenceManager(proc) {
     };
 
     /**
-     * @documentation Determines if the the required preconditions for the populate() method are met.
+     * @description Determines if the the required preconditions for the populate() method are met.
      *
      * @param user {User} - The user object that popluate is operating on.
      * @param next {Function} - The callback that the populate() will call when it is complete.
@@ -154,7 +160,7 @@ function UserPersistenceManager(proc) {
     };
 
     /**
-     * @documentation Tests preconditions for hte getCookie(UserCookie, Function) method.
+     * @description Tests preconditions for hte getCookie(UserCookie, Function) method.
      *
      * @param userCookie {UserCookie} The object that will have a cookie generated for it, we must test that it is valid.
      * @param callback {Function} the callback function that will be called after the userCookie object is populated, must test that it is a function and has arity 2.

@@ -31,7 +31,7 @@ function GetCookieAction(user, req, proc) {
     proc.upm = UserPersistenceManager();
 
     /**
-     * @documentation Executes the action. Creates a cookie from the user and request objects that were passed in.
+     * @description Executes the action. Creates a cookie from the user and request objects that were passed in.
      *
      * @precondition userIsValid : the proc.user object is a valid and well formed user object.
      * @precondition requestIsValid : the proc.request object is a valid Request.
@@ -67,7 +67,7 @@ function GetCookieAction(user, req, proc) {
     };
 
     /**
-     * @documentation determines if the preconditions for this action are satisfied.
+     * @description determines if the preconditions for this action are satisfied.
      *
      * @return  {Boolean} true if all preconditions are satisfied, false otherwise.
      */

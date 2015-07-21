@@ -20,7 +20,7 @@ function AuthenticateAction(user, proc) {
     proc.upm  = UserPersistenceManager();
 
     /**
-     * @documentation: returns true if the user object of the class is a valid user in the access control system, false otherwise.
+     * @description: returns true if the user object of the class is a valid user in the access control system, false otherwise.
      *
      *
      * @precondition userIsSet : the user attribute of the object contains a valid User class.

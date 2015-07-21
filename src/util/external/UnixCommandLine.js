@@ -19,7 +19,7 @@ function UnixCommandLine(proc) {
     var that = ExternalProgram(proc);
 
     /**
-     * @documentation executes a command to the unix commandline. If the stdin parameter is non-null the
+     * @description executes a command to the unix commandline. If the stdin parameter is non-null the
      * contents of the string will be written into the process' standard input.
      *
      * @precondition validCommand : the cmd is a non-empty string.
@@ -48,7 +48,7 @@ function UnixCommandLine(proc) {
     };
 
     /**
-     * @documentation internal execute function. Exists to filter based on type of execution, whether it uses stdin or not.
+     * @description internal execute function. Exists to filter based on type of execution, whether it uses stdin or not.
      *
      * @param cmd {String} The command to execute
      * @param stdin {String} If this is non-null this input will be written to the standard in of the program
@@ -71,7 +71,7 @@ function UnixCommandLine(proc) {
     };
 
     /**
-     * @documentation executes the command and writes into standard input of the process.
+     * @description executes the command and writes into standard input of the process.
      *
      * @param cmd {String}
      * @param stdin {String}
@@ -115,7 +115,7 @@ function UnixCommandLine(proc) {
     };
 
     /**
-     * @documentation executes a command that does not require writing to the process' stdin.
+     * @description executes a command that does not require writing to the process' stdin.
      *
      * @param cmd {String} the command to execute
      * @param next {Function} will be called when execution is done, takes three arguments, has signature next(err, stdout, stderr).

@@ -31,7 +31,7 @@ function AccessControlSystem(proc) {
 
 
     /**
-     * @documentation gets a cookie that matches the User object.
+     * @description gets a cookie that matches the User object.
      * @param user  { User }
      * @param next { Function }
      */
@@ -52,7 +52,7 @@ function AccessControlSystem(proc) {
 
 
     /**
-     * @documentation returns the data elements that were baked into the cookie.
+     * @description returns the data elements that were baked into the cookie.
      *
      * @param cookieString {String}
      * @param next { Function }

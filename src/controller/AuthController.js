@@ -22,7 +22,7 @@ function AuthController(path, proc) {
     proc.loginAction = null;
 
     /**
-     * @documentation Internal method to handle POST requests. Called by RouteController.post() method.
+     * @description Internal method to handle POST requests. Called by RouteController.post() method.
      *
      * @param req {Request}
      * @param res {Response}
@@ -83,7 +83,7 @@ function AuthController(path, proc) {
     };
 
     /**
-     * @documentation Internal method to handle GET requests, called by RouteController.get()
+     * @description Internal method to handle GET requests, called by RouteController.get()
      *
      * @param req { Request }
      * @param res { Response }

@@ -12,7 +12,7 @@ function ExternalProgram(proc) {
     var that = {};
 
     /**
-     * @documentation executes a command to external program. This method is abstract and should be provided a
+     * @description executes a command to external program. This method is abstract and should be provided a
      *  defintition by a sub-class.
      *
      * @precondition validCallback : The next callback function should be a function that takes 3 arguments.
@@ -27,7 +27,7 @@ function ExternalProgram(proc) {
     };
 
     /**
-     * @documentation removes any characters that could be used for an injection attack on the external program.
+     * @description removes any characters that could be used for an injection attack on the external program.
      *  this function provides a default implementation that strips out common injection attack chars, more specific
      *  functionality should be provided by a specific sub-class
      *

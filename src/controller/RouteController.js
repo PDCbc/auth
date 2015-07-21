@@ -21,7 +21,7 @@ function RouteController(path, proc) {
     proc.path = path || "/";
 
     /**
-     * @documentation Services a GET request. This method repackages the express.Request and express.Reponse objects
+     * @description Services a GET request. This method repackages the express.Request and express.Reponse objects
      * and calls the object's handleGet(Request, Response) method. The handleGet(...) method is responsible
      * for responding to the request.
      *
@@ -35,7 +35,7 @@ function RouteController(path, proc) {
     };
 
     /**
-     * @documentation Services a POST request. This method repackages the express.Request and express.Response objects and
+     * @description Services a POST request. This method repackages the express.Request and express.Response objects and
      * calls the object's handlePost(Request, Response) method. The handlePost(...) method is responsible
      * for responding to the request.
      *
@@ -49,7 +49,7 @@ function RouteController(path, proc) {
     };
 
     /**
-     * @documentation: Gets the path the controller is meant to service for the API.
+     * @description: Gets the path the controller is meant to service for the API.
      *
      * @return  {String}
      */

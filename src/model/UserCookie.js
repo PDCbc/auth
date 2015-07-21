@@ -85,7 +85,7 @@ UserCookie.prototype.setUser = function (user) {
 };
 
 /**
- * @documentation Determines if the UserCookie object has all of its fields set.
+ * @description Determines if the UserCookie object has all of its fields set.
  * @return {Boolean}
  */
 UserCookie.prototype.isWellFormed = function () {
@@ -99,7 +99,7 @@ UserCookie.prototype.isWellFormed = function () {
 };
 
 /**
- * @documentation Determines if all of the fields are complete and correctly typed for the object.
+ * @description Determines if all of the fields are complete and correctly typed for the object.
  * @returns {boolean} true if all fields are complete, false otherwise.
  */
 UserCookie.prototype.isComplete = function () {

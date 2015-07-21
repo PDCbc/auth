@@ -8,8 +8,9 @@ var assert               = require('assert');
 var DACSAdapter          = require("../../../../src/util/persistence/dacs/DACSAdapter").DACSAdapter;
 var User                 = require("../../../../src/model/User").User;
 var CallbackInvalidError = require("../../../../src/util/error/CallbackInvalidError").CallbackInvalidError;
-var Role  = require("../../../../src/model/Role").Role;
-var codes = require("../../../../src/util/Codes");
+var Role                 = require("../../../../src/model/Role").Role;
+var codes                = require("../../../../src/util/Codes");
+var UserCookie           = require("../../../../src/model/UserCookie").UserCookie;
 
 
 describe("DACSAdapter", function () {
@@ -42,7 +43,143 @@ describe("DACSAdapter", function () {
 
     });
 
-    describe("#getUser", function () {
+    describe("#getCookiePrecondition()", function () {
+
+        var user       = null;
+        var userCookie = null;
+
+        var testFunction = function(x,y){
+            //dummy callback function that takes exactly 2 args.
+        };
+
+        beforeEach(function (done) {
+
+            user       = new User('a', 'b', 'c');
+            userCookie = new UserCookie(user, null, "IP");
+
+            done();
+
+        });
+
+        afterEach(function (done) {
+
+            user       = null;
+            userCookie = null;
+
+            done();
+
+        });
+
+
+        it("should throw a CallbackInvalidError if next argument is null ", function (done) {
+
+            assert.throws(function () {
+
+                proc.getCookiePrecondition(userCookie, null);
+
+            }, CallbackInvalidError);
+
+            done();
+
+        });
+
+        it("should throw a CallbackInvalidError if next argument is undefined", function (done) {
+
+            assert.throws(function () {
+
+                proc.getCookiePrecondition(userCookie);
+
+            }, CallbackInvalidError);
+
+            done();
+
+        });
+
+
+        it("should throw a CallbackInvalidError if next is not a function", function (done) {
+
+            assert.throws(function () {
+
+                proc.getCookiePrecondition(userCookie, {});
+
+            }, CallbackInvalidError);
+
+            done();
+
+        });
+
+        it("should throw a CallbackInvalidError next takes less than 2 args", function (done) {
+
+            assert.throws(function () {
+
+                var cb = function(x){
+                    //function that takes only 1 arg.
+                };
+
+                proc.getCookiePrecondition(userCookie, cb);
+
+            }, CallbackInvalidError);
+
+            done();
+
+        });
+
+        it("should throw a CallbackInvalidError next takes more than 2 args", function (done) {
+
+            assert.throws(function () {
+
+                var cb = function(x,y,z){
+                    //function that takes only 3 arg.
+                };
+
+                proc.getCookiePrecondition(userCookie, cb);
+
+            }, CallbackInvalidError);
+
+            done();
+
+        });
+
+        it("should return false if the user parameter is null", function (done) {
+
+            var r = proc.getCookiePrecondition(null, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false if the user parameter is not a UserCookie type", function (done) {
+
+            var r = proc.getCookiePrecondition({}, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false if the user parameter is not well formed", function (done) {
+
+            var malformedUser = new User("a");
+
+            var malformedUserCookie = new UserCookie(malformedUser, null, "IP");
+
+            var r = proc.getCookiePrecondition(malformedUserCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return true if all preconditions are satisfied", function (done) {
+
+            var r = proc.getCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, true);
+            done();
+
+        });
+
+
+    });
+
+    describe("#getUser()", function () {
 
         it("should return ERR_FAILED_PRECONDITION if user parameter does not satisfy preconditions", function (done) {
 
@@ -1172,7 +1309,6 @@ describe("DACSAdapter", function () {
             done();
 
         });
-
 
     });
 

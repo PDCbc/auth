@@ -411,12 +411,14 @@ function DACSAdapter(proc) {
      */
     var getCookie = function (user, next) {
 
-        if (!proc.getCookiePrecondition()) {
+        if (!proc.getCookiePrecondition(user, next)) {
 
             next(codes.ERR_FAILED_PRECONDITION, null);
         }
 
-        proc.doDacsGetCookie(user, function (err, result) {
+        proc.doDacsGenerateCookie(user, function (err, result) {
+
+
 
         });
 
@@ -448,6 +450,12 @@ function DACSAdapter(proc) {
 
     };
 
+    var doDacsGenerateCookie = function(user, next){
+
+        next(1, null);
+
+    };
+
     /**
      * @description returns the data elements that were baked into the cookie
      *
@@ -465,6 +473,7 @@ function DACSAdapter(proc) {
     proc.getCookiePrecondition  = getCookiePrecondition;
     proc.doDacsAuth             = doDacsAuth;
     proc.doDacsFetchPrivateData = doDacsFetchPrivateData;
+    proc.doDacsGenerateCookie   = doDacsGenerateCookie;
     proc.assignRoles            = assignRoles;
     proc.generateRoles          = generateRoles;
     proc.assignPrivateData      = assignPrivateData;

@@ -43,16 +43,183 @@ describe("DACSAdapter", function () {
 
     });
 
-    describe("#parseCookieDecryptResult", function(){
+    describe("#parseCookieDecryptResult", function () {
 
         var inputString = 'federation="PDC"\njurisdiction="TEST"\nusername="oscar"\nidentity="PDC::TEST:oscar"\nip_address="10.0.2.2"\nroles="admin,user,bob,cat"\nexpires_secs="1437592528" (Wed Jul 22 19:15:28 2015 UTC)\nauth_style="generated"\nvalid_for="acs"\nversion="1.4"\n';
 
 
-        it("should run something", function(done){
+        it("should run something", function (done) {
 
             proc.parseCookieDecryptResult(inputString);
 
             done()
+
+        });
+
+    });
+
+    describe("#unbakeCookiePrecondition", function () {
+
+        var user         = null;
+        var userCookie   = null;
+        var testFunction = null;
+
+        beforeEach(function (done) {
+
+            user         = new User('a', 'b', 'c');
+            userCookie   = new UserCookie(null, "foo", "IP");
+            testFunction = function (x, y) {
+                //dummy callback function
+            };
+
+            done();
+
+        });
+
+        afterEach(function (done) {
+
+            user         = null;
+            userCookie   = null;
+            testFunction = null;
+
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if the next callback is null", function(done){
+
+            assert.throws(function(){
+
+                proc.unbakeCookiePrecondition(userCookie, null);
+
+            }, CallbackInvalidError);
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if the next callback is undefined", function(done){
+
+            assert.throws(function(){
+
+                proc.unbakeCookiePrecondition(userCookie);
+
+            }, CallbackInvalidError);
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if the next callback is not a function", function(done){
+
+            assert.throws(function(){
+
+                proc.unbakeCookiePrecondition(userCookie, {});
+
+            }, CallbackInvalidError);
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if the next callback is a function with less than 2 args", function(done){
+
+            var cb = function(x){
+                //has less than 2 args.
+            };
+
+            assert.throws(function(){
+
+                proc.unbakeCookiePrecondition(userCookie, cb);
+
+            }, CallbackInvalidError);
+            done();
+
+        });
+
+        it("should throw CallbackInvalidError if the next callback is a function with more than 2 args", function(done){
+
+            var cb = function(x,y,z){
+                //has more than 2 args.
+            };
+
+            assert.throws(function(){
+
+                proc.unbakeCookiePrecondition(userCookie, cb);
+
+            }, CallbackInvalidError);
+            done();
+
+        });
+
+        it("should return false for null UserCookie parameter", function(done){
+
+            var r = proc.unbakeCookiePrecondition(null, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false for undefinedl UserCookie parameter", function(done){
+
+            var r = proc.unbakeCookiePrecondition(undefined, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false for non UserCookie type UserCookie parameter", function(done){
+
+            var r = proc.unbakeCookiePrecondition({}, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false for UserCookie parameter without getCookieString function", function(done){
+
+            userCookie.getCookieString = null;
+
+            var r = proc.unbakeCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false for UserCookie parameter with getCookieString() that returns non-string", function(done){
+
+            userCookie.getCookieString = function(){
+                return 5;
+            };
+
+            var r = proc.unbakeCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false for UnixCommandLine not defined.", function(done){
+
+            delete proc.ucl;
+
+            var r = proc.unbakeCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return false for process.env.FEDERATION not set", function(done){
+
+            delete process.env.FEDERATION;
+
+            var r = proc.unbakeCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, false);
+            done();
+
+        });
+
+        it("should return true satisfied preconditions", function(done){
+
+            var r = proc.unbakeCookiePrecondition(userCookie, testFunction);
+            assert.equal(r, true);
+            done();
 
         });
 
@@ -115,7 +282,7 @@ describe("DACSAdapter", function () {
         it("should return false if the UserCookie.getIP() will return null value", function (done) {
 
             userCookie.ip = null;
-            var r = proc.getCookiePrecondition(userCookie, testFunction);
+            var r         = proc.getCookiePrecondition(userCookie, testFunction);
             assert.equal(r, false);
             done();
 
@@ -124,7 +291,7 @@ describe("DACSAdapter", function () {
         it("should return false if the UserCookie.getIP() will non-string value", function (done) {
 
             userCookie.ip = 5;
-            var r = proc.getCookiePrecondition(userCookie, testFunction);
+            var r         = proc.getCookiePrecondition(userCookie, testFunction);
             assert.equal(r, false);
             done();
 

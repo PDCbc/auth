@@ -551,6 +551,7 @@ function DACSAdapter(proc) {
      * @precondition validCallback : the callback function next is of type Function and has arity 2.
      * @precondition validUserCookie : the userCookie parameter is a valid UserCookie object that has the a cookie string accessible via getCookieString().
      * @precondition dacsInterface : an interface to the dacs program is provided by a UnixCommandLine object accessible via the proc.ucl object.
+     * @precondition federationSet : the federation is available via the process.env.FEDERATION variable
      *
      * @param userCookie {UserCookie} the object that contains a the cookie string to unbake and populate
      * @param next {Function} to call after unbaking is done. Has signature next(err, result).
@@ -748,6 +749,15 @@ function DACSAdapter(proc) {
 
     };
 
+    /**
+     * @description determines if the preconditions for the unbakeCookie function have been met. See the jsdoc string for preconditions.
+     *
+     * @throws {CallbackInvalidError} when the callback function next is not a valid function, or does not take two arguments.
+     *
+     * @param uc {UserCookie} must check that this is a valid UserCookie type.
+     * @param next {Function} must check that this is a function with arity 2.
+     * @return {boolean} true if the preconditions are satisfied, false otherwise.
+     */
     var unbakeCookiePrecondition = function (uc, next) {
 
         if (!next || !(next instanceof Function) || next.length !== 2) {
@@ -767,6 +777,11 @@ function DACSAdapter(proc) {
 
             return false;
 
+        } else if(!process.env.FEDERATION){
+
+            //FAILED precondition federationSet.
+
+            return false;
         }
 
         //PASSED preconditions

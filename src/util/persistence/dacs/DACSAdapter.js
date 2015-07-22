@@ -620,6 +620,7 @@ function DACSAdapter(proc) {
 
     /**
      * @description makes a call to dacscookie -decrypt with the information in userCookie.
+     *
      * @param userCookie {UserCookie}
      * @param next { Function}
      */
@@ -633,6 +634,7 @@ function DACSAdapter(proc) {
 
             if (code) {
 
+                logger.warn("doDacsDecryptCookie(UserCookie, Function) got a non-zero return code from call to dacscookie, code was: "+ code + ", returning: "+ code.DECRYPT_COOKIE_FAILED);
                 return next(codes.DECRYPT_COOKIE_FAILED, null);
 
             }

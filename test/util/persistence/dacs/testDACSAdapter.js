@@ -43,6 +43,159 @@ describe("DACSAdapter", function () {
 
     });
 
+    describe("#doDacsDecryptCookie()", function () {
+
+        var dacscookie = 'username="doctorWho"\nroles="foo,bar,baz"\njurisdiction="bin"';
+
+        var exec = function (cmd, cookie, callback) {
+
+            callback(null, dacscookie, "");
+
+        };
+
+        var userCookie = null;
+        var cmd        = "dacscookie -u pdc.dev -decrypt";
+
+        beforeEach(function (done) {
+
+            proc.ucl.exec = exec;
+            userCookie    = new UserCookie(new User(), "cookieString", "IP");
+
+            done();
+
+        });
+
+        afterEach(function (done) {
+
+            proc.ucl.exec = null;
+            userCookie    = null;
+
+            done();
+
+        });
+
+        it("should return error code DECRYPT_COOKIE_FAILED when the response has a non-falsey error", function (done) {
+
+            proc.ucl.exec = function (a, b, c) {
+                return c(1, null, null);
+            };
+
+            proc.doDacsDecryptCookie(userCookie, function (x, y) {
+
+                assert.equal(x, codes.DECRYPT_COOKIE_FAILED);
+                assert.equal(y, null);
+
+                done();
+
+            });
+
+        });
+
+        it("should return error code DECRYPT_COOKIE_FAILED when response from dacscookie cannot be parsed", function (done) {
+
+            proc.ucl.exec = function (a, b, c) {
+                return c(0, "cannot\nbe\nparsed\nproperly", "stderr");
+            };
+
+            proc.doDacsDecryptCookie(userCookie, function (x, y) {
+
+                assert.equal(x, codes.DECRYPT_COOKIE_FAILED);
+                assert.equal(y, null);
+
+                done();
+
+            });
+
+        });
+
+        it("should return error code DECRYPT_COOKIE_FAILED when response from does not contain a username field", function (done) {
+
+            proc.ucl.exec = function (a, b, c) {
+                return c(0, 'notUsername="foo"', "stderr");
+            };
+
+            proc.doDacsDecryptCookie(userCookie, function (x, y) {
+
+                assert.equal(x, codes.DECRYPT_COOKIE_FAILED);
+                assert.equal(y, null);
+
+                done();
+
+            });
+
+        });
+
+        it("should return error code DECRYPT_COOKIE_FAILED when response from does not contain a jurisdiction field", function (done) {
+
+            proc.ucl.exec = function (a, b, c) {
+                return c(0, 'username="foo"\nnotJurisdiction="juri"', "stderr");
+            };
+
+            proc.doDacsDecryptCookie(userCookie, function (x, y) {
+
+                assert.equal(x, codes.DECRYPT_COOKIE_FAILED);
+                assert.equal(y, null);
+
+                done();
+
+            });
+
+        });
+
+        it("should return error code DECRYPT_COOKIE_FAILED when response from does not contain a jurisdiction field", function (done) {
+
+            proc.ucl.exec = function (a, b, c) {
+                return c(0, 'username="foo"\nnotJurisdiction="juri"', "stderr");
+            };
+
+            proc.doDacsDecryptCookie(userCookie, function (x, y) {
+
+                assert.equal(x, codes.DECRYPT_COOKIE_FAILED);
+                assert.equal(y, null);
+
+                done();
+
+            });
+
+        });
+
+        it("should return error code DECRYPT_COOKIE_FAILED when response from does not contain a role field", function (done) {
+
+            proc.ucl.exec = function (a, b, c) {
+                return c(0, 'username="foo"\njurisdiction="juri"\nroles="foo,bar,baz', "stderr");
+            };
+
+            proc.doDacsDecryptCookie(userCookie, function (x, y) {
+
+                assert.equal(x, codes.DECRYPT_COOKIE_FAILED);
+                assert.equal(y, null);
+
+                done();
+
+            });
+
+        });
+
+        it("should return error code DECRYPT_COOKIE_FAILED when ", function (done) {
+
+            proc.ucl.exec = function (a, b, c) {
+                return c(0, 'username="foo"\njurisdiction="juri"\nroles="foo,bar,baz', "stderr");
+            };
+
+            proc.doDacsDecryptCookie(userCookie, function (x, y) {
+
+                assert.equal(x, codes.DECRYPT_COOKIE_FAILED);
+                assert.equal(y, null);
+
+                done();
+
+            });
+
+        });
+
+    });
+
+
     describe("#parseCookieDecryptResult", function () {
 
         var inputString = 'username="doctorWho"\nip_address="0.0.0.0"\nroles="foo,bar,baz"';
@@ -60,18 +213,18 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return null if the string does not have an '='", function(done){
+        it("should return null if the string does not have an '='", function (done) {
 
-            var s = "foo\nbin\nbar";
+            var s   = "foo\nbin\nbar";
             var obj = proc.parseCookieDecryptResult(s);
             assert.equal(obj, null);
             done();
 
         });
 
-        it("should ignore empty strings", function(done){
+        it("should ignore empty strings", function (done) {
 
-            var obj = proc.parseCookieDecryptResult(inputString+"\n\n");
+            var obj = proc.parseCookieDecryptResult(inputString + "\n\n");
             assert.equal(typeof obj, "object");
             assert.equal(obj.username, "doctorWho");
             assert.equal(obj.ip_address, "0.0.0.0");

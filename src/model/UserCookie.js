@@ -9,10 +9,11 @@ var Entity = require('./Entity').Entity;
 var User   = require("./User").User;
 
 /**
+ * @description creates a UserCookie object to work with.
  *
- * @param user
- * @param cookieString
- * @param ip
+ * @param user {User} the User object to wrap
+ * @param cookieString {String} the cookie string
+ * @param ip {String} the IP address that the request associated with the cookie originated from.
  * @constructor
  */
 function UserCookie(user, cookieString, ip) {
@@ -41,10 +42,11 @@ UserCookie.prototype.getCookieString = function () {
  */
 UserCookie.prototype.setCookieString = function (c) {
 
-    if (c) {
-        this.cookieString = c;
+    if (!c || typeof c !== 'string') {
+        throw new TypeError("UserCookie.setCookieString() expects a single string parameter");
     }
 
+    this.cookieString = c;
 };
 
 /**
@@ -61,8 +63,14 @@ UserCookie.prototype.getIP = function () {
  */
 UserCookie.prototype.setIP = function (ip) {
 
-    if (ip) {
+    if (!ip || typeof ip !== 'string') {
+
+        throw new TypeError("UserCookie.setIP(String) expects a single string parameter");
+
+    }else{
+
         this.ip = ip;
+
     }
 
 };
@@ -79,7 +87,12 @@ UserCookie.prototype.getUser = function () {
  */
 UserCookie.prototype.setUser = function (user) {
 
-    if (user && user.isWellFormed()) {
+    if (!user || !(user instanceof User)) {
+
+        throw new TypeError("UserCookie.setUser(User) expects a single parameter of type User");
+
+    }else {
+
         this.user = user;
     }
 

@@ -36,7 +36,7 @@ function User(username, password, juri, clinicianId, clinic, roles) {
 User.prototype = new ControlledEntity();
 
 /**
- * @return  {String}
+ * @return  {String} the string that is the username
  */
 User.prototype.getUsername = function () {
     return this.username;
@@ -44,17 +44,24 @@ User.prototype.getUsername = function () {
 
 
 /**
- * @param uname {String}
+ * @description sets the User's username.
+ *
+ * @throws {TypeError} if the input is not a valid string, or the empty string.
+ *
+ * @param uname {String} the string to set the username to, must be a string with length > 0.
  */
 User.prototype.setUsername = function (uname) {
-    if (uname) {
+    if(!uname || typeof uname !== 'string' ){
+        throw new TypeError("User.setUsername(String) expects exactly one string parameter");
+    }
+    else{
         this.username = uname;
     }
 };
 
 
 /**
- * @return  {String}
+ * @return  {String} the string that is the User's clinician id
  */
 User.prototype.getClinicianId = function () {
     return this.clinicianId;
@@ -62,13 +69,21 @@ User.prototype.getClinicianId = function () {
 
 
 /**
+ * @throws {TypeError} if the input is not a valid string or is the empty string.
+ *
  * @param cid {String}
  */
 User.prototype.setClinicianId = function (cid) {
-    if (cid) {
+
+    if(!cid || typeof cid !== "string"){
+
+        throw new TypeError("User.setClinicianId(String) expects exactly 1 string parameter");
+
+    }else{
         this.clinicianId = cid;
         this.identity    = cid;
     }
+
 };
 
 
@@ -81,12 +96,18 @@ User.prototype.getClinic = function () {
 
 
 /**
+ * @throws {TypeError} if the input is not a valid string, or is the empty string.
+ *
  * @param cid {String}
  */
 User.prototype.setClinic = function (cid) {
-    if (cid) {
+
+    if(!cid || typeof cid !== 'string'){
+        throw new TypeError("User.setClinic(String) expects exactly one parameter of type String");
+    }else{
         this.clinic = cid;
     }
+
 };
 
 
@@ -99,10 +120,14 @@ User.prototype.getJurisdiction = function () {
 
 
 /**
+ * @throws {TypeError} if the input is not a valid string or is the empty string
+ *
  * @param jid {String}
  */
 User.prototype.setJurisdiction = function (jid) {
-    if (jid) {
+    if(!jid || typeof jid !== 'string'){
+        throw new TypeError("User.setJurisdiction(String) expects exactly one parameter of type String");
+    }else{
         this.jurisdiction = jid;
     }
 };
@@ -115,7 +140,12 @@ User.prototype.getPassword = function () {
 };
 
 User.prototype.setPassword = function(pass){
-    if(pass){
+
+    if(!pass || typeof pass !== "string"){
+
+        throw new TypeError("User.setPassword(String) expects exactly one string argument");
+
+    }else{
         this.password = pass;
     }
 

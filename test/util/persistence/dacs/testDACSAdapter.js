@@ -45,14 +45,38 @@ describe("DACSAdapter", function () {
 
     describe("#parseCookieDecryptResult", function () {
 
-        var inputString = 'federation="PDC"\njurisdiction="TEST"\nusername="oscar"\nidentity="PDC::TEST:oscar"\nip_address="10.0.2.2"\nroles="admin,user,bob,cat"\nexpires_secs="1437592528" (Wed Jul 22 19:15:28 2015 UTC)\nauth_style="generated"\nvalid_for="acs"\nversion="1.4"\n';
+        var inputString = 'username="doctorWho"\nip_address="0.0.0.0"\nroles="foo,bar,baz"';
 
+        it("should return object with populated fields", function (done) {
 
-        it("should run something", function (done) {
+            var obj = proc.parseCookieDecryptResult(inputString);
 
-            proc.parseCookieDecryptResult(inputString);
+            assert.equal(typeof obj, "object");
+            assert.equal(obj.username, "doctorWho");
+            assert.equal(obj.ip_address, "0.0.0.0");
+            assert.equal(obj.roles, "foo,bar,baz");
 
             done()
+
+        });
+
+        it("should return null if the string does not have an '='", function(done){
+
+            var s = "foo\nbin\nbar";
+            var obj = proc.parseCookieDecryptResult(s);
+            assert.equal(obj, null);
+            done();
+
+        });
+
+        it("should ignore empty strings", function(done){
+
+            var obj = proc.parseCookieDecryptResult(inputString+"\n\n");
+            assert.equal(typeof obj, "object");
+            assert.equal(obj.username, "doctorWho");
+            assert.equal(obj.ip_address, "0.0.0.0");
+            assert.equal(obj.roles, "foo,bar,baz");
+            done();
 
         });
 
@@ -86,9 +110,9 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should throw CallbackInvalidError if the next callback is null", function(done){
+        it("should throw CallbackInvalidError if the next callback is null", function (done) {
 
-            assert.throws(function(){
+            assert.throws(function () {
 
                 proc.unbakeCookiePrecondition(userCookie, null);
 
@@ -97,9 +121,9 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should throw CallbackInvalidError if the next callback is undefined", function(done){
+        it("should throw CallbackInvalidError if the next callback is undefined", function (done) {
 
-            assert.throws(function(){
+            assert.throws(function () {
 
                 proc.unbakeCookiePrecondition(userCookie);
 
@@ -108,9 +132,9 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should throw CallbackInvalidError if the next callback is not a function", function(done){
+        it("should throw CallbackInvalidError if the next callback is not a function", function (done) {
 
-            assert.throws(function(){
+            assert.throws(function () {
 
                 proc.unbakeCookiePrecondition(userCookie, {});
 
@@ -119,13 +143,13 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should throw CallbackInvalidError if the next callback is a function with less than 2 args", function(done){
+        it("should throw CallbackInvalidError if the next callback is a function with less than 2 args", function (done) {
 
-            var cb = function(x){
+            var cb = function (x) {
                 //has less than 2 args.
             };
 
-            assert.throws(function(){
+            assert.throws(function () {
 
                 proc.unbakeCookiePrecondition(userCookie, cb);
 
@@ -134,13 +158,13 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should throw CallbackInvalidError if the next callback is a function with more than 2 args", function(done){
+        it("should throw CallbackInvalidError if the next callback is a function with more than 2 args", function (done) {
 
-            var cb = function(x,y,z){
+            var cb = function (x, y, z) {
                 //has more than 2 args.
             };
 
-            assert.throws(function(){
+            assert.throws(function () {
 
                 proc.unbakeCookiePrecondition(userCookie, cb);
 
@@ -149,7 +173,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return false for null UserCookie parameter", function(done){
+        it("should return false for null UserCookie parameter", function (done) {
 
             var r = proc.unbakeCookiePrecondition(null, testFunction);
             assert.equal(r, false);
@@ -157,7 +181,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return false for undefinedl UserCookie parameter", function(done){
+        it("should return false for undefinedl UserCookie parameter", function (done) {
 
             var r = proc.unbakeCookiePrecondition(undefined, testFunction);
             assert.equal(r, false);
@@ -165,7 +189,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return false for non UserCookie type UserCookie parameter", function(done){
+        it("should return false for non UserCookie type UserCookie parameter", function (done) {
 
             var r = proc.unbakeCookiePrecondition({}, testFunction);
             assert.equal(r, false);
@@ -173,7 +197,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return false for UserCookie parameter without getCookieString function", function(done){
+        it("should return false for UserCookie parameter without getCookieString function", function (done) {
 
             userCookie.getCookieString = null;
 
@@ -183,9 +207,9 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return false for UserCookie parameter with getCookieString() that returns non-string", function(done){
+        it("should return false for UserCookie parameter with getCookieString() that returns non-string", function (done) {
 
-            userCookie.getCookieString = function(){
+            userCookie.getCookieString = function () {
                 return 5;
             };
 
@@ -195,7 +219,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return false for UnixCommandLine not defined.", function(done){
+        it("should return false for UnixCommandLine not defined.", function (done) {
 
             delete proc.ucl;
 
@@ -205,7 +229,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return false for process.env.FEDERATION not set", function(done){
+        it("should return false for process.env.FEDERATION not set", function (done) {
 
             delete process.env.FEDERATION;
 
@@ -215,7 +239,7 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return true satisfied preconditions", function(done){
+        it("should return true satisfied preconditions", function (done) {
 
             var r = proc.unbakeCookiePrecondition(userCookie, testFunction);
             assert.equal(r, true);

@@ -713,6 +713,12 @@ function DACSAdapter(proc) {
 
     };
 
+    /**
+     * @description parses the output from dacscookie -decrypt and returns it as an object.
+     *
+     * @param input {String} the string from the standard output of dacscookie -decrypt. Has structure "key=value" one per line
+     * @returns {Object} that is indexed by the key, returns null if there was a parse error.
+     */
     var parseCookieDecryptResult = function (input) {
 
         var obj = {};

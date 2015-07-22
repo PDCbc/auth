@@ -370,39 +370,6 @@ function DACSAdapter(proc) {
     };
 
     /**
-     * @param user { User } The user object to fetch roles for.
-     * @param next { Function } The callback function, takes 2 arguments, has signature: next(err, result).
-     */
-    var getRoles = function (user, next) {
-
-    };
-
-    /**
-     * @description determines if the preconditions for the getRoles() function are met.
-     *
-     * @throws {CallbackInvalidError} when the next argument is not a function or it does not have arity 2.
-     *
-     * @param user {User} must be a valid well-form User object.
-     * @param next {Function} the callback function, must have arity 2.
-     * @returns {boolean} true if the preconditions for getRoles() are satisfied, false otherwise.
-     */
-    var getRolesPrecondition = function (user, next) {
-
-        if (!user || !user.isWellFormed()) {
-
-            return false;
-
-        } else if (!next || !(next instanceof Function) || next.length !== 2) {
-
-            throw new CallbackInvalidError("DACSAdapter.getRoles(user, next) precondition failed, argument next must be a function with 2 args");
-        }
-
-        return true;
-
-    };
-
-
-    /**
      * @description returns a cookie based on the user and extra properties
      *
      * @precondition userIsValid : the user parameter is a valid well formed UserCookie object.
@@ -482,6 +449,12 @@ function DACSAdapter(proc) {
 
     };
 
+    /**
+     * @description Generates a cookie from dacscookie and returns the UserCookie object with the cookie in it.
+     *
+     * @param user {UserCookie} the UserCookie (contains a User object) to generate the cookie for.
+     * @param next {Function} the function to call when the generation is complete. Has signature next(err, result).
+     */
     var doDacsGenerateCookie = function (user, next) {
 
         var cmd = "dacscookie ";
@@ -799,7 +772,6 @@ function DACSAdapter(proc) {
     };
 
     proc.getUserPrecondition      = getUserPrecondition;
-    proc.getRolesPrecondition     = getRolesPrecondition;
     proc.getCookiePrecondition    = getCookiePrecondition;
     proc.unbakeCookiePrecondition = unbakeCookiePrecondition;
     proc.doDacsDecryptCookie      = doDacsDecryptCookie;
@@ -813,7 +785,6 @@ function DACSAdapter(proc) {
 
 
     that.getUser      = getUser;
-    that.getRoles     = getRoles;
     that.getCookie    = getCookie;
     that.unbakeCookie = unbakeCookie;
 

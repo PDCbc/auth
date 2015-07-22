@@ -43,6 +43,298 @@ describe("DACSAdapter", function () {
 
     });
 
+    describe("#doDacsGenerateCookie()", function () {
+
+        var user       = null;
+        var userCookie = null;
+
+        var testFunciion = null;
+
+        beforeEach(function (done) {
+
+            user       = new User('a', 'b', 'c');
+            userCookie = new UserCookie(user, null, "IP");
+
+            testFunction = function (x, y) {
+                //dummy function.
+            };
+
+            done();
+
+        });
+
+        afterEach(function (done) {
+
+            user         = null;
+            userCookie   = null;
+            testFunction = null;
+
+            done();
+
+        });
+
+        it("add a single role into cookie encryption if the user has only 1 role", function (done) {
+
+            proc.ucl.exec = function (x, y, z) {
+
+                //check inputs to the exec function
+                assert.equal(typeof x, "string");
+                assert(x.match("^.*\\s-role\\sfoo\\s.*$")); //check that we have a single role
+                assert.equal(y, null);
+                assert(z instanceof Function);
+
+                z(1, null, null); //error code is code=1, stdout=null, stderr=null
+
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.GET_COOKIE_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            var user = new User('a', 'b', 'c');
+            user.addRole(new Role('foo'));
+            userCookie.setUser(user);
+            proc.doDacsGenerateCookie(userCookie, cb);
+
+        });
+
+        it("add multiple roles into cookie encryption if the user has only multiple roles", function (done) {
+
+            proc.ucl.exec = function (x, y, z) {
+
+                //check inputs to the exec function
+                assert.equal(typeof x, "string");
+                assert(x.match("^.*\\s-role\\sfoo,bar,baz\\s.*$")); //check that we have exactly three roles as expected.
+                assert.equal(y, null);
+                assert(z instanceof Function);
+
+                z(1, null, null); //error code is code=1, stdout=null, stderr=null
+
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.GET_COOKIE_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            var user = new User('a', 'b', 'c');
+            user.addRole(new Role('foo'));
+            user.addRole(new Role('bar'));
+            user.addRole(new Role('baz'));
+            userCookie.setUser(user);
+            proc.doDacsGenerateCookie(userCookie, cb);
+
+        });
+
+        it("should make a call to UnixCommandLine.exec() and handle any error by returning GET_COOKIE_FAILED", function (done) {
+
+            proc.ucl.exec = function (x, y, z) {
+
+                //check inputs to the exec function
+                assert.equal(typeof x, "string");
+                assert.equal(y, null);
+                assert(z instanceof Function);
+
+                z(1, null, null); //error code is code=1, stdout=null, stderr=null
+
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.GET_COOKIE_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            proc.doDacsGenerateCookie(userCookie, cb);
+
+        });
+
+        it("should return error if stdout from ucl.exec() is not valid", function (done) {
+
+            proc.ucl.exec = function (x, y, z) {
+
+                //check inputs to the exec function
+                assert.equal(typeof x, "string");
+                assert.equal(y, null);
+                assert(z instanceof Function);
+
+                z(null, "", null); //code=null, stdout="", stderr=null
+
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.GET_COOKIE_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            proc.doDacsGenerateCookie(userCookie, cb);
+
+        });
+
+        it("should return a UserCookie object with the cookie added", function (done) {
+
+            proc.ucl.exec = function (x, y, z) {
+
+                //check inputs to the exec function
+                assert.equal(typeof x, "string");
+                assert.equal(y, null);
+                assert(z instanceof Function);
+
+                z(null, "someCookie", null); //code=null, stdout=SOMECOOKIESTRING, stderr=null
+
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, null);
+                assert(result instanceof UserCookie);
+                assert.equal(result.getCookieString(), "someCookie");
+
+                done();
+
+            };
+
+            proc.doDacsGenerateCookie(userCookie, cb);
+
+        });
+
+        it("should remove extra new line chars from stdout", function (done) {
+
+            proc.ucl.exec = function (x, y, z) {
+
+                //check inputs to the exec function
+                assert.equal(typeof x, "string");
+                assert.equal(y, null);
+                assert(z instanceof Function);
+
+                z(null, "\nsomeCookie\n", null); //code=null, stdout=\nSOMECOOKIESTRING\n, stderr=null
+
+            };
+
+            var cb = function (err, result) {
+
+                assert.equal(err, null);
+                assert(result instanceof UserCookie);
+                assert.equal(result.getCookieString(), "someCookie");
+
+                done();
+
+            };
+
+            proc.doDacsGenerateCookie(userCookie, cb);
+
+        });
+
+    });
+
+    describe("#getCookie()", function () {
+
+        var user       = null;
+        var userCookie = null;
+
+        var testFunciion = null;
+
+        beforeEach(function (done) {
+
+            user       = new User('a', 'b', 'c');
+            userCookie = new UserCookie(user, null, "IP");
+
+            testFunction = function (x, y) {
+                //dummy function.
+            };
+
+            done();
+
+        });
+
+        afterEach(function (done) {
+
+            user         = null;
+            userCookie   = null;
+            testFunction = null;
+
+            done();
+
+        });
+
+
+        it("should return ERR_FAILED_PRECONDITION if the preconditions are not met", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            delete userCookie.user; //forces an invalid UserCookie object.
+
+            dacs.getCookie(userCookie, cb);
+
+
+        });
+
+        it("should return error if doDacsGenerateCookie returns an error", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, 1);
+                assert.equal(result, null);
+
+                done();
+            };
+
+            proc.doDacsGenerateCookie = function (u, c) {
+
+                c(1, null);
+
+            };
+
+            dacs.getCookie(userCookie, cb);
+
+
+        });
+
+        it("should return result from doDacsGenerateCookie", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, null);
+                assert.deepEqual(result, {foo: "bar"});
+
+                done();
+            };
+
+            proc.doDacsGenerateCookie = function (u, c) {
+
+                c(null, {foo: "bar"});
+
+            };
+
+            dacs.getCookie(userCookie, cb);
+
+
+        });
+
+    });
+
     describe("#unbakeCookie()", function () {
 
 

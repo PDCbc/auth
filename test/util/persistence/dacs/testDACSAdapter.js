@@ -162,7 +162,7 @@ describe("DACSAdapter", function () {
         it("should return error code DECRYPT_COOKIE_FAILED when response from does not contain a role field", function (done) {
 
             proc.ucl.exec = function (a, b, c) {
-                return c(0, 'username="foo"\njurisdiction="juri"\nroles="foo,bar,baz', "stderr");
+                return c(0, 'username="foo"\njurisdiction="juri"\nNotroles="foo,bar,baz', "stderr");
             };
 
             proc.doDacsDecryptCookie(userCookie, function (x, y) {
@@ -176,16 +176,37 @@ describe("DACSAdapter", function () {
 
         });
 
-        it("should return error code DECRYPT_COOKIE_FAILED when ", function (done) {
+        it("should return error code DECRYPT_COOKIE_FAILED when roles input is an empty string", function (done) {
 
             proc.ucl.exec = function (a, b, c) {
-                return c(0, 'username="foo"\njurisdiction="juri"\nroles="foo,bar,baz', "stderr");
+                return c(0, 'username="foo"\njurisdiction="juri"\nroles=""', "stderr");
             };
 
             proc.doDacsDecryptCookie(userCookie, function (x, y) {
 
                 assert.equal(x, codes.DECRYPT_COOKIE_FAILED);
                 assert.equal(y, null);
+
+                done();
+
+            });
+
+        });
+
+        it("should return populated UserCookie object for normal input", function (done) {
+
+            proc.ucl.exec = function (a, b, c) {
+                return c(0, 'username="foo"\njurisdiction="juri"\nroles="foo,bar,baz"', "stderr");
+            };
+
+            proc.doDacsDecryptCookie(userCookie, function (x, y) {
+
+                assert.equal(x, null);
+                assert(userCookie);
+                assert(y instanceof UserCookie );
+                assert.equal(y.getUser().getUsername(), 'foo');
+                assert.equal(y.getUser().getJurisdiction(), 'juri');
+                assert.deepEqual(y.getUser().getRoles(), [new Role('foo'), new Role('bar'), new Role('baz')]);
 
                 done();
 

@@ -619,10 +619,10 @@ function DACSAdapter(proc) {
     };
 
     /**
-     * @description makes a call to dacscookie -decrypt with the information in userCookie.
+     * @description makes a call to dacscookie -decrypt with the information in userCookie; populates the userCookie object with the result of dacscookie.
      *
      * @param userCookie {UserCookie}
-     * @param next { Function}
+     * @param next {Function} the callback function for when doDacsDecryptCookie is complete, has signature next(err, result)
      */
     var doDacsDecryptCookie = function (userCookie, next) {
 
@@ -673,6 +673,7 @@ function DACSAdapter(proc) {
             //4. assign roles
 
             if (!obj.roles) {
+
 
                 logger.warn("doDacsDecryptCookie(UserCookie, Function) did not get a 'roles' field back from DACS, returning: " + codes.DECRYPT_COOKIE_FAILED);
                 return next(codes.DECRYPT_COOKIE_FAILED, null);

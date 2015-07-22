@@ -20,12 +20,14 @@ function Response(response, proc) {
         proc.response.status(status);
 
         if (obj.respond && obj.cookie) {
+
+
             proc.response.format({
                 json: function () {
                     proc.response.json(obj)
                 },
                 html: function () {
-                    proc.response.redirect(obj.respond + "?cookie=" + obj.cookie);
+                    proc.response.redirect(obj.respond);
                 }
             });
         } else {
@@ -57,7 +59,7 @@ function Response(response, proc) {
 
     };
 
-    var redirect = function (path) {
+    var redirect = function (path, port) {
 
         path = path || '/auth/login';
 

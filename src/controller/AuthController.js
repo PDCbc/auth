@@ -79,11 +79,16 @@ function AuthController(path, proc) {
 
                 //we expect that the result field contains a UserCookie object.
 
+                //we set the session cookie string so that it can be used by the
+                //user management console to log in.
+                req.setCookie(result.getCookieString());
+
                 var obj = {
                     cookie   : result.getCookieString(),
                     clinician: result.getUser().getClinicianId(),
                     clinic   : result.getUser().getClinic(),
-                    message  : codes.AUTH_SUCCESS
+                    message  : codes.AUTH_SUCCESS,
+                    respond  : req.getRespond()
                 };
 
                 return res.send(200, obj);

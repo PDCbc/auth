@@ -52,7 +52,7 @@ function Request(request, proc) {
      */
     var getCookie = function () {
 
-        if(proc.request && proc.request.body){
+        if (proc.request && proc.request.body) {
 
             return proc.request.body.cookie;
 
@@ -78,12 +78,62 @@ function Request(request, proc) {
         }
     };
 
+    var getRespond = function () {
+        var b = that.getBody();
+
+        if (b && b.respond) {
+
+            return b.respond;
+
+        } else {
+            return null;
+        }
+    };
+
+    var setCookie = function (cookie) {
+
+        if (proc.request && proc.request.session) {
+            proc.request.session.baked = cookie;
+        }
+
+    };
+
+    var getCookie = function(cookie){
+
+        if(proc.request && proc.request.session){
+
+            return proc.request.session.baked;
+
+        }else{
+
+            return null;
+
+        }
+
+    };
+
+    var getSession = function () {
+        if (proc.request && proc.request.session) {
+
+            return proc.request.session;
+
+        } else {
+
+            return null;
+
+        }
+    };
+
     that.getSourceIP  = getSourceIP;
     that.getQuery     = getQuery;
     that.getParams    = getParams;
     that.getBody      = getBody;
     that.isWellFormed = isWellFormed;
     that.getCookie    = getCookie;
+    that.getRespond   = getRespond;
+    that.setCookie    = setCookie;
+    that.getCookie    = getCookie;
+    that.getSession   = getSession;
 
     return that;
 

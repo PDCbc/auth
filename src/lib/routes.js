@@ -38,7 +38,10 @@ function routes(next, data) {
 
     mainRouter.use('/auth', authRouter);
     mainRouter.use('/', rootRouter);
+    mainRouter.use('/verify', verifyRouter);
 
+    controlRouter.use("/auth", authRouter);
+    controlRouter.use("/", rootRouter);
     controlRouter.use('/verify', verifyRouter);
 
     var userRouter = new express.Router();

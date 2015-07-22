@@ -22,7 +22,17 @@ function RootController(path, proc) {
      */
     var handleGet = function (req, res) {
 
-        res.redirect("/auth/login");
+        //if they have a session, they have logged in.
+
+        if(req.getSession() && req.getCookie()){
+
+            res.redirect("/users");
+
+        }else{
+
+            res.redirect("/auth/login");
+
+        }
 
     };
 

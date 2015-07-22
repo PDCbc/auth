@@ -546,7 +546,7 @@ function DACSAdapter(proc) {
     };
 
     /**
-     * @description decrypts a cookie from DACS to find the username, roles, and IP that was used to generate the cookie.
+     * @description decrypts a cookie from DACS to find the username, roles, and IP that was used to generate the cookie. Uses these username to get private data and populate the UserCookie object.
      *
      * @precondition validCallback : the callback function next is of type Function and has arity 2.
      * @precondition validUserCookie : the userCookie parameter is a valid UserCookie object that has the a cookie string accessible via getCookieString().
@@ -583,7 +583,6 @@ function DACSAdapter(proc) {
                 } else {
 
                     proc.doDacsFetchPrivateData(result.getUser(), function (err, result) {
-
 
                         if(err){
 

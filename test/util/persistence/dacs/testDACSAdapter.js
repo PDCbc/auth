@@ -43,6 +43,201 @@ describe("DACSAdapter", function () {
 
     });
 
+    describe("#unbakeCookie()", function () {
+
+
+        var user         = null;
+        var userCookie   = null;
+        var testFunction = null;
+
+        beforeEach(function (done) {
+
+            user         = new User('a', 'b', 'c');
+            userCookie   = new UserCookie(user, "somecookiestring", "IP");
+            testFunction = function (x, y) {
+                //does nothing, but takes 2 argments.
+            };
+
+            done();
+
+        });
+
+        afterEach(function (done) {
+
+            user         = null;
+            userCookie   = null;
+            testFunction = null;
+
+            done();
+
+        });
+
+        it("should return ERR_FAILED_PRECONDITION for invalid UserCookie input", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            dacs.unbakeCookie(null, cb);
+
+        });
+
+        it("should handle errors from doDacsDecryptCookie response", function (done) {
+
+            var doDacsDecryptCookie = function (uc, callback) {
+                callback(1, null); //returns an error code.
+            };
+
+            proc.doDacsDecryptCookie = doDacsDecryptCookie;
+
+            var cb = function (err, result) {
+
+                assert.equal(err, 1);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            dacs.unbakeCookie(userCookie, cb);
+
+        });
+
+        it("should return DECRYPT_COOKIE_FAILED if the UserCookie result from doDacsDecryptCookie is not well formed.", function (done) {
+
+            var doDacsDecryptCookie = function (uc, callback) {
+
+                callback(null, new UserCookie(new User(), null, null));
+
+            };
+
+            proc.doDacsDecryptCookie = doDacsDecryptCookie;
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.DECRYPT_COOKIE_FAILED);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            dacs.unbakeCookie(userCookie, cb);
+
+        });
+
+        it("should handle errors from doDacsFetchPrivateData", function (done) {
+
+            var doDacsDecryptCookie = function (uc, callback) {
+
+                return callback(null, userCookie);
+
+            };
+
+            var doDacsFetchPrivateData = function (uc, callback) {
+
+                //callback should take an error and null.
+                return callback(1, null);
+
+            };
+
+            proc.doDacsDecryptCookie    = doDacsDecryptCookie;
+            proc.doDacsFetchPrivateData = doDacsFetchPrivateData;
+
+            var cb = function (err, result) {
+
+                assert.equal(err, 1);
+                assert.equal(result, null);
+
+                done();
+
+            };
+
+            dacs.unbakeCookie(userCookie, cb);
+
+        });
+
+        it("should pass valid UserCookie result forward", function (done) {
+
+            var doDacsDecryptCookie = function (uc, callback) {
+
+                return callback(null, userCookie);
+
+            };
+
+            var doDacsFetchPrivateData = function (uc, callback) {
+
+                //callback should take an error and null.
+
+                userCookie.getUser().setUsername('foo');
+                userCookie.getUser().setPassword('bar');
+                userCookie.getUser().setJurisdiction('bar');
+                userCookie.getUser().setClinic('cob');
+                userCookie.getUser().setClinicianId('dob');
+
+                return callback(null, userCookie.getUser());
+
+            };
+
+            proc.doDacsDecryptCookie    = doDacsDecryptCookie;
+            proc.doDacsFetchPrivateData = doDacsFetchPrivateData;
+
+            var cb = function (err, result) {
+
+                assert.equal(err, null);
+                assert(result instanceof UserCookie);
+                assert.equal(result.getUser().getUsername(), "foo");
+                assert.equal(result.getUser().getPassword(), "bar");
+                assert.equal(result.getUser().getJurisdiction(), "bar");
+                assert.equal(result.getUser().getClinic(), "cob");
+                assert.equal(result.getUser().getClinicianId(), "dob");
+
+                done();
+
+            };
+
+            dacs.unbakeCookie(userCookie, cb);
+
+        });
+
+        it("should return INVALID_USER if the UserCookie.user object is not complete", function (done) {
+
+            var doDacsDecryptCookie = function (uc, callback) {
+
+                return callback(null, userCookie);
+
+            };
+
+            var doDacsFetchPrivateData = function (uc, callback) {
+
+                //callback should take an error and null.
+
+                return callback(null, userCookie.getUser());
+
+            };
+
+            proc.doDacsDecryptCookie    = doDacsDecryptCookie;
+            proc.doDacsFetchPrivateData = doDacsFetchPrivateData;
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.INVALID_USER);
+                assert.equal(result, null);
+                done();
+
+            };
+
+            dacs.unbakeCookie(userCookie, cb);
+
+        });
+
+    });
+
     describe("#doDacsDecryptCookie()", function () {
 
         var dacscookie = 'username="doctorWho"\nroles="foo,bar,baz"\njurisdiction="bin"';
@@ -203,7 +398,7 @@ describe("DACSAdapter", function () {
 
                 assert.equal(x, null);
                 assert(userCookie);
-                assert(y instanceof UserCookie );
+                assert(y instanceof UserCookie);
                 assert.equal(y.getUser().getUsername(), 'foo');
                 assert.equal(y.getUser().getJurisdiction(), 'juri');
                 assert.deepEqual(y.getUser().getRoles(), [new Role('foo'), new Role('bar'), new Role('baz')]);

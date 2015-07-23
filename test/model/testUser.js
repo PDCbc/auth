@@ -469,14 +469,14 @@ describe("User", function () {
 
         it("should return false if the roles are null", function (done) {
 
-            var u   = new User();
+            var u          = new User();
             u.username     = "foo";
             u.clinic       = "foo";
             u.identity     = "foo";
-            u.clinicianId   = "foo";
+            u.clinicianId  = "foo";
             u.password     = "foo";
             u.jurisdiction = "foo";
-            u.roles = null;
+            u.roles        = null;
             assert.equal(u.isComplete(), false);
             done();
 
@@ -489,7 +489,7 @@ describe("User", function () {
             u.username     = "foo";
             u.clinic       = "foo";
             u.identity     = "foo";
-            u.clinicianId   = "foo";
+            u.clinicianId  = "foo";
             u.password     = "foo";
             u.jurisdiction = "foo";
 
@@ -511,7 +511,7 @@ describe("User", function () {
             u.username     = "foo";
             u.clinic       = "foo";
             u.identity     = "foo";
-            u.clinicianId   = "foo";
+            u.clinicianId  = "foo";
             u.password     = "foo";
             u.jurisdiction = "foo";
 

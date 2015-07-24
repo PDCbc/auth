@@ -5,6 +5,7 @@
  */
 
 var Entity = require('./Entity').Entity;
+var Role = require('./Role').Role;
 
 function ControlledEntity(id, roles) {
 
@@ -25,10 +26,37 @@ ControlledEntity.prototype.getRoles = function () {
 
 
 /**
- * @param roles {Array<Role>}
+ * @description sets the internal role's Array, this will overwrite an existing roles.
+ *
+ * @throws {TypeError} if the input is not a valid Array or it is an Array that contains objects other than roles.
+ *
+ * @param roles {Array} the array to set the roles to, must contain only Role objects.
  */
 ControlledEntity.prototype.setRoles = function (roles) {
-    throw 'AbstractMethodNotImplementedError';
+
+    if(!roles || !(roles instanceof Array)){
+
+        throw new TypeError("ControlledEntity.setRoles(Array) expects exactly 1 parameter of type Array that contains Role types");
+
+    }
+
+    for(var r = 0; r < roles.length; r++){
+
+        if(!roles[r] || !(roles[r] instanceof Role)){
+
+            throw new TypeError("ControlledEntity.setRoles(Array) expects exactly 1 parameter of type Array that contains Role types");
+
+        }
+
+    }
+
+    this.roles = [];
+
+    for(r = 0; r < roles.length; r++){
+
+       this.addRole(roles[r]);
+
+    }
 
 };
 
@@ -37,33 +65,23 @@ ControlledEntity.prototype.setRoles = function (roles) {
  *
  * @precondition validRole : The role input is non-null and is well formed.
  *
+ * @throws {TypeError} if the input parameter is not a valid and well formed Role object.
+ *
  * @param r { Role }
- * @return {Boolean} true if the role was sucecssfully added, false otherwise.
  */
 ControlledEntity.prototype.addRole = function (r) {
 
-    if (!r || !r.isWellFormed()) {
+    if (!r || !(r instanceof Role) ||!r.isWellFormed() ) {
 
-        return false;
+        throw new TypeError('ControlledEntity.addRole(Role) expects a single well-formed Role type parameter');
 
     } else {
 
-        this.roles = this.roles || [];  //initize the roles array if it isn't already
+        this.roles = this.roles || [];  //init the roles array if it isn't already
         this.roles.push(r);
-        return true;
+
     }
 
 };
-
-
-/**
- * @description: Removes the specified role (if it exists) from the roles for this entity.
- * @param r { Role }
- */
-ControlledEntity.prototype.removeRole = function (r) {
-    throw 'AbstractMethodNotImplementedError';
-
-};
-
 
 module.exports = {ControlledEntity: ControlledEntity};

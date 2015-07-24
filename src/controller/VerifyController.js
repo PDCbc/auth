@@ -25,6 +25,7 @@ function VerifyController(path, proc) {
      */
     var handlePost = function (req, res) {
 
+        logger.info(req.getCookie());
         proc.verifyAction = VerifyAction(req.getCookie(), req);
 
         proc.verifyAction.doAction(function (err, result) {

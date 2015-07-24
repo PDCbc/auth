@@ -30,7 +30,7 @@ function LoginAction(username, password, juri, req, proc) {
 
     var that = Action();
 
-    proc.req          = req;
+    proc.req          = req || null;
     proc.user         = new User(username, password, juri);
     proc.authAction   = null;
     proc.cookieAction = null;
@@ -48,7 +48,7 @@ function LoginAction(username, password, juri, req, proc) {
 
         if (proc.actionPreCondition()) {
 
-            proc.authAction = AuthenticateAction(proc.user);
+            proc.authAction = proc.authAction ||AuthenticateAction(proc.user);
 
             //authenticate the user.
             return proc.authAction.doAction(proc.handleAuthActionResponse);
@@ -70,7 +70,7 @@ function LoginAction(username, password, juri, req, proc) {
     var handleAuthActionResponse = function (err, result) {
 
 
-        if (err && !result) {
+        if (err || !result) {
 
             //Authentication failed. Pass back to the parent.
 
@@ -86,7 +86,7 @@ function LoginAction(username, password, juri, req, proc) {
             if (result instanceof User && result.isComplete()) {
 
                 //now create and call a GetCookieAction to generate a cookie for the user.
-                proc.cookieAction = GetCookieAction(result, proc.req);
+                proc.cookieAction = proc.cookieAction || GetCookieAction(result, proc.req);
 
                 return proc.cookieAction.doAction(proc.handleCookieResponse);
 
@@ -104,20 +104,27 @@ function LoginAction(username, password, juri, req, proc) {
 
     var handleCookieResponse = function (err, result) {
 
-        logger.error(err);
-        logger.success(result);
-
         return proc.callback(err, result);
 
     };
 
     /**
+     * @throws {TypeError} when the input parameter, user, is not a valid user object or is null.
+     *
      * @param user { User }
      */
     var setUser = function (user) {
-        if (user && user instanceof User) {
+
+        if (!user || !(user instanceof User)) {
+
+            throw new TypeError("LoginAction.setUser(User) expects 1 argument of type User");
+
+        } else {
+
             proc.user = user;
+
         }
+
     };
 
 
@@ -134,11 +141,11 @@ function LoginAction(username, password, juri, req, proc) {
      */
     var setRequest = function (req) {
 
-        if (!req ) {
+        if (!req) {
 
             throw new TypeError("LoginAction.setRequest(Requset) requires a single Request object as input");
 
-        }else{
+        } else {
 
             proc.req = req;
 

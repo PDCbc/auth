@@ -98,11 +98,11 @@ function Request(request, proc) {
 
     };
 
-    var getCookie = function(cookie){
+    var getCookie = function(){
 
-        if(proc.request && proc.request.session){
+        if(proc.request && (proc.request.session || proc.request.body)){
 
-            return proc.request.session.baked;
+            return proc.request.body.bakedCookie || proc.request.session.baked;
 
         }else{
 

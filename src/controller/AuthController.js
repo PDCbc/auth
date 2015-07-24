@@ -91,6 +91,8 @@ function AuthController(path, proc) {
                     respond  : req.getRespond()
                 };
 
+                logger.info(util.inspect(obj));
+
                 return res.send(200, obj);
             }
 

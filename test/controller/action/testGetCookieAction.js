@@ -9,6 +9,7 @@ var GetCookieAction      = require('../../../src/controller/action/GetCookieActi
 var User                 = require("../../../src/model/User").User;
 var Request              = require("../../../src/controller/Request").Request;
 var CallbackInvalidError = require("../../../src/util/error/CallbackInvalidError").CallbackInvalidError;
+var codes                = require("../../../src/util/Codes");
 
 describe("GetCookieAction", function () {
 
@@ -36,6 +37,103 @@ describe("GetCookieAction", function () {
         gca  = null;
 
         done();
+
+    });
+
+
+    describe("#doAction()", function () {
+
+        it("should call the actionPrecondition() function", function (done) {
+
+            proc.actionPreCondition = function (f) {
+
+                assert(f instanceof Function);
+                assert.equal(f.length, 2);
+                done();
+
+            };
+
+            var cb = function (a, b) {
+            };
+
+            gca.doAction(cb);
+
+        });
+
+        it("should return ERR_FAILED_ACTION_PRECONDITION", function (done) {
+
+            proc.actionPreCondition = function (f) {
+
+                return false;
+
+            };
+
+            var cb = function (x, y) {
+                assert.equal(x, codes.ERR_FAILED_ACTION_PRECONDITION);
+                done();
+            };
+
+            gca.doAction(cb);
+        });
+
+        it("should call UserPersistenceManager.asCookie()", function (done) {
+
+            proc.request = {
+                getSourceIP: function () {
+                }
+            };
+            proc.upm     = {};
+
+            proc.upm.asCookie = function (x, y) {
+
+                done();
+
+            };
+
+            var cb = function (x, y) {
+
+            };
+
+            gca.doAction(cb);
+
+
+        });
+
+    });
+
+    describe("#GetCookieAction()", function(){
+
+        it("should use default values if not provided to constructor", function(done){
+
+            var p = {};
+            var g = GetCookieAction(null, null, p);
+
+            assert.equal(p.request, null);
+            assert.equal(p.user, null);
+
+            done();
+
+        });
+
+    });
+
+    describe("#handleAsCookieResponse()", function (done) {
+
+        it("should pass the result back and set ", function (done) {
+
+
+            proc.callback = function (err, result) {
+
+                assert.equal(proc.callback, null);
+                assert.equal(err, 1);
+                assert.equal(result, 2);
+                done();
+
+            };
+
+            proc.handleAsCookieResponse(1, 2);
+
+        });
 
     });
 
@@ -189,7 +287,8 @@ describe("GetCookieAction", function () {
 
         it("it should throw CallbackInvalidError if the next callback takes less than 2 args ", function (done) {
 
-            var cb = function(x){};
+            var cb = function (x) {
+            };
 
             assert.throws(
                 function () {
@@ -204,7 +303,8 @@ describe("GetCookieAction", function () {
 
         it("it should throw CallbackInvalidError if the next callback takes more than 2 args ", function (done) {
 
-            var cb = function(x,y,z){};
+            var cb = function (x, y, z) {
+            };
 
             assert.throws(
                 function () {

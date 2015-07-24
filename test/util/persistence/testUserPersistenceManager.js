@@ -10,7 +10,7 @@ var CallbackInvalidError = require("../../../src/util/error/CallbackInvalidError
 var User                 = require("../../../src/model/User").User;
 var UserCookie           = require("../../../src/model/UserCookie").UserCookie;
 
-describe("module_name", function () {
+describe("UserPersistenceManager", function () {
 
     var upm        = null;
     var proc       = null;

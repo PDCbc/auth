@@ -25,10 +25,10 @@ function GetCookieAction(user, req, proc) {
 
     var that = Action();
 
-    proc.request = req || null;
-    proc.user    = user || null;
-
-    proc.upm = UserPersistenceManager();
+    proc.request  = req || null;
+    proc.user     = user || null;
+    proc.callback = null;
+    proc.upm      = UserPersistenceManager();
 
     /**
      * @description Executes the action. Creates a cookie from the user and request objects that were passed in.
@@ -61,7 +61,9 @@ function GetCookieAction(user, req, proc) {
 
     var handleAsCookieResponse = function (err, result) {
 
-        return proc.callback(err, result);
+        var n         = proc.callback;
+        proc.callback = null;
+        return n(err, result);
     };
 
     /**
@@ -97,7 +99,7 @@ function GetCookieAction(user, req, proc) {
     proc.actionPreCondition     = actionPreCondition;
     proc.handleAsCookieResponse = handleAsCookieResponse;
 
-    that.doAction               = doAction;
+    that.doAction = doAction;
 
     return that;
 

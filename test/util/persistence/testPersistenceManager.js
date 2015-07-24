@@ -52,7 +52,7 @@ describe("PersistenceManager", function () {
 
             assert.throws(function(){
 
-                pm.populate();
+                pm.save();
 
             });
 

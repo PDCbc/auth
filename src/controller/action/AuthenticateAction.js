@@ -5,10 +5,11 @@
  */
 
 var Action                 = require('./Action').Action;
-var error = require("../../util/Codes");
+var error                  = require("../../util/Codes");
 var User                   = require("../../model/User").User;
 var UserPersistenceManager = require("../../util/persistence/UserPersistenceManager").UserPersistenceManager;
 var logger                 = require('../../util/logger/Logger').Logger("AuthenticateAction");
+var CallbackInvalidError   = require("../../util/error/CallbackInvalidError").CallbackInvalidError;
 
 function AuthenticateAction(user, proc) {
 
@@ -37,7 +38,7 @@ function AuthenticateAction(user, proc) {
      */
     var doAction = function (next) {
 
-        if (!proc.actionPreCondition()) {
+        if (!proc.actionPreCondition(next)) {
 
             logger.warn("doAction(next): " + error.ERR_FAILED_ACTION_PRECONDITION);
             return next(error.ERR_FAILED_ACTION_PRECONDITION, null);
@@ -61,13 +62,18 @@ function AuthenticateAction(user, proc) {
 
     };
 
-
     /**
      * @description Determines whether the action is set up correctly.
      *
      * @return {Boolean} - true if the preconditions are met, false otherwise.
      */
-    var actionPreCondition = function () {
+    var actionPreCondition = function (next) {
+
+        if (!next || !(next instanceof Function) || next.length !== 2) {
+
+            throw new CallbackInvalidError("AuthenticationAction(Function) requires argument that is a callback function with arity 2")
+
+        }
 
         if (!proc.user || !proc.upm) {
 

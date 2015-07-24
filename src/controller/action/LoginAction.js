@@ -5,14 +5,15 @@
  * @description An action for logging a user into the system. Obtains a cookie that represents the user.
  */
 
-var logger             = require("../../util/logger/Logger").Logger("LoginAction");
-var error              = require("../../util/Codes");
-var Action             = require('./Action').Action;
-var User               = require("../../model/User").User;
-var AuthenticateAction = require("./AuthenticateAction").AuthenticateAction;
-var GetCookieAction    = require("./GetCookieAction").GetCookieAction;
-var util               = require('util');
-var codes              = require("../../util/Codes.js");
+var logger               = require("../../util/logger/Logger").Logger("LoginAction");
+var error                = require("../../util/Codes");
+var Action               = require('./Action').Action;
+var User                 = require("../../model/User").User;
+var AuthenticateAction   = require("./AuthenticateAction").AuthenticateAction;
+var GetCookieAction      = require("./GetCookieAction").GetCookieAction;
+var util                 = require('util');
+var codes                = require("../../util/Codes.js");
+var CallbackInvalidError = require("../../util/error/CallbackInvalidError").CallbackInvalidError;
 
 /**
  * @constructor
@@ -101,7 +102,7 @@ function LoginAction(username, password, juri, req, proc) {
 
     };
 
-    var handleCookieResponse = function(err, result){
+    var handleCookieResponse = function (err, result) {
 
         logger.error(err);
         logger.success(result);
@@ -132,9 +133,17 @@ function LoginAction(username, password, juri, req, proc) {
      * @param req { Request }
      */
     var setRequest = function (req) {
-        if (req) {
+
+        if (!req ) {
+
+            throw new TypeError("LoginAction.setRequest(Requset) requires a single Request object as input");
+
+        }else{
+
             proc.req = req;
+
         }
+
     };
 
 
@@ -151,9 +160,9 @@ function LoginAction(username, password, juri, req, proc) {
      *
      * @return {Boolean} - true if all preconditions are met, false otherwise.
      */
-    var actionPreCondition = function () {
+    var actionPreCondition = function (next) {
 
-        if (!proc || !proc.user || !proc.req) {
+        if (!proc.user || !proc.req) {
 
             return false;
 
@@ -162,7 +171,9 @@ function LoginAction(username, password, juri, req, proc) {
             return false;
 
         } else if (!proc.callback || !(proc.callback instanceof Function) || proc.callback.length !== 2) {
+
             return false;
+
         }
 
         return true;

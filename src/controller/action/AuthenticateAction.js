@@ -63,7 +63,7 @@ function AuthenticateAction(user, proc) {
 
 
     /**
-     * Determines whether the action is set up correctly.
+     * @description Determines whether the action is set up correctly.
      *
      * @return {Boolean} - true if the preconditions are met, false otherwise.
      */

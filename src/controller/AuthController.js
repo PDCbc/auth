@@ -84,6 +84,9 @@ function AuthController(path, proc) {
                 req.setCookie(result.getCookieString());
 
                 var obj = {
+                    username : result.getUser().getUsername(),
+                    jurisdiction : result.getUser().getJurisdiction(),
+
                     cookie   : result.getCookieString(),
                     clinician: result.getUser().getClinicianId(),
                     clinic   : result.getUser().getClinic(),

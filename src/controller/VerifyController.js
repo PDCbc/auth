@@ -40,10 +40,11 @@ function VerifyController(path, proc) {
                 return res.send(200, {
 
                     cookie: result.getCookieString(),
-                    data  : {
-                        clinician: result.getUser().getClinicianId(),
-                        clinic: result.getUser().getClinic()
-                    }
+                    clinician: result.getUser().getClinicianId(),
+                    clinic: result.getUser().getClinic(),
+                    username : result.getUser().getUsername(),
+                    federation : process.env.FEDERATION,
+                    jurisdiction : result.getUser().getJurisdiction()
 
                 });
 

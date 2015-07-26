@@ -54,9 +54,7 @@ function UserPersistenceManager(proc) {
 
                 if (!result.isComplete()) {
 
-                    logger.info(util.inspect(result));
                     logger.warn("asCookie() did not get a complete UserCookie object back from AccessControlSystem.getCookie(), returning " + error.GET_COOKIE_FAILED);
-
                     return next(error.GET_COOKIE_FAILED, null);
 
                 } else {
@@ -68,7 +66,6 @@ function UserPersistenceManager(proc) {
             }
 
         });
-
 
     };
 
@@ -113,17 +110,6 @@ function UserPersistenceManager(proc) {
         });
 
     };
-
-    /**
-     * @param user { User }
-     * @param next { Function }
-     */
-    var save = function (user, next) {
-
-        throw "NotImplementedError";
-
-    };
-
 
     /**
      * @description: returns a user object derived from the cookie string with private data filled out.
@@ -174,7 +160,7 @@ function UserPersistenceManager(proc) {
 
             throw new CallbackInvalidError("UserPersistenceManager.fromCookie(UserCookie, Function) expects a function argument that takes exactly 2 arguments.");
 
-        } else if (!uc || !(uc instanceof UserCookie || !uc.getCookieString || typeof uc.getCookieString() !== "string" )) {
+        } else if (!uc || !(uc instanceof UserCookie) || !uc.getCookieString || typeof uc.getCookieString() !== "string" ) {
 
             //FAILS precondition validUserCookie
 
@@ -186,19 +172,14 @@ function UserPersistenceManager(proc) {
 
             return false;
 
+        }else{
+
+            //PASSED preconditions
+
+            return true;
         }
 
-        //PASSED preconditions
 
-        return true;
-
-    };
-
-    /**
-     */
-    var getAllUsers = function () {
-
-        throw "NotImplementedError";
 
     };
 
@@ -214,8 +195,6 @@ function UserPersistenceManager(proc) {
      */
     var populatePrecondition = function (user, next) {
 
-        //check that the user is valid.
-
         if (!user || !(user instanceof User) || !user.isWellFormed()) {
 
             return false;
@@ -224,9 +203,7 @@ function UserPersistenceManager(proc) {
 
             return false
 
-        }
-
-        if (!(next instanceof Function) || !next.length) {
+        } else if (!(next instanceof Function) || !next.length) {
 
             throw new CallbackInvalidError("Precondition for UserPersistenceManager.populate() failed, callback is not a valid function.");
 
@@ -234,9 +211,11 @@ function UserPersistenceManager(proc) {
 
             throw new CallbackInvalidError("Precondition for UserPersistenceManager.populate() failed, callback does not have 2 arguments as required.");
 
-        }
+        }else{
 
-        return true;
+            return true;
+
+        }
 
     };
 
@@ -274,9 +253,7 @@ function UserPersistenceManager(proc) {
     that.UserPersistenceManager = UserPersistenceManager;
     that.asCookie               = asCookie;
     that.populate               = populate;
-    that.save                   = save;
     that.fromCookie             = fromCookie;
-    that.getAllUsers            = getAllUsers;
 
     return that;
 

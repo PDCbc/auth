@@ -480,19 +480,127 @@ describe("UserPersistenceManager", function () {
 
         });
 
-        it("should return false if proc.acs is not set", function(){
+        it("should return false if proc.acs is not set", function () {
 
             delete proc.acs;
+            userCookie.setCookieString("foobar");
             assert.equal(proc.fromCookiePrecondition(userCookie, testFunction), false);
 
         });
 
-        it("should return true if preconditions pass", function(){
+        it("should return true if preconditions pass", function () {
 
             userCookie.setCookieString("foobar");
             assert.equal(proc.fromCookiePrecondition(userCookie, testFunction), true);
 
         });
+
+    });
+
+    describe("#fromCookie", function () {
+
+        it("should return ERR_FAILED_PRECONDITION if preconditions are not met", function (done) {
+
+            var cb = function (x, y) {
+
+                assert.equal(x, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(y, null);
+                done();
+            };
+
+            upm.fromCookie(null, cb);
+
+        });
+
+        it("should call acs.unbakeCookie and forward an response via the next callback function", function (done) {
+
+            proc.acs.unbakeCookie = function (x, y) {
+
+                assert(x instanceof UserCookie);
+                assert(y instanceof Function);
+                assert.equal(y.length, 2);
+
+                y(1, 2);
+
+            };
+
+            var cb = function (x, y) {
+
+                assert.equal(x, 1);
+                assert.equal(y, 2);
+                done();
+
+            };
+
+            userCookie.setCookieString("foo");
+            upm.fromCookie(userCookie, cb);
+
+        });
+
+    });
+
+    describe("#populate()", function () {
+
+        it("should return ERR_FAILED_PRECONDITION if a precondition is not met", function (done) {
+
+            var cb = function (x, y) {
+
+                assert.equal(x, codes.ERR_FAILED_PRECONDITION);
+                assert.equal(y, null);
+                done();
+
+            };
+
+            upm.populate(null, cb);
+
+        });
+
+        it("should call proc.acs.getUser and handle an error", function (done) {
+
+            proc.acs.getUser = function (user, next) {
+
+                assert(user instanceof User);
+                assert(next instanceof Function);
+
+                next(1, null);
+
+            };
+
+            var cb = function (x, y) {
+
+                assert.equal(x, 1);
+                assert.equal(y, null);
+                done();
+
+            };
+
+            upm.populate(new User('a','b','c'), cb);
+
+        });
+
+        it("should call proc.acs.getUser and pass result", function (done) {
+
+            proc.acs.getUser = function (user, next) {
+
+                assert(user instanceof User);
+                assert(next instanceof Function);
+
+                next(null, 1);
+
+            };
+
+            var cb = function (x, y) {
+
+                assert.equal(x, null);
+                assert.equal(y, 1);
+                done();
+
+            };
+
+            upm.populate(new User('a','b','c'), cb);
+
+        });
+
     });
 
 

@@ -129,7 +129,7 @@ function UserPersistenceManager(proc) {
         if (!proc.fromCookiePrecondition(userCookie, next)) {
 
             logger.warn("fromCookie(UserCookie, Function) failed the precondition, returning code: " + error.ERR_FAILED_PRECONDITION);
-            next(error.ERR_FAILED_PRECONDITION, null);
+            return next(error.ERR_FAILED_PRECONDITION, null);
 
         }
 

@@ -38,7 +38,7 @@ function VerifyAction(cookieString, request, proc) {
      */
     var doAction = function (next) {
 
-        if (!proc.actionPreCondition(next)) {
+        if (!proc.actionPrecondition(next)) {
 
             logger.warn("doAction(Function) failed precondition(s)");
             return next(codes.ERR_FAILED_ACTION_PRECONDITION, null);
@@ -59,9 +59,9 @@ function VerifyAction(cookieString, request, proc) {
 
         //we expect that the result is a valid UserCookie object.
 
-        if(err){
+        if (err) {
 
-            logger.warn("handleFromCookieResponse(String, UserCookie) received an error: "+ err);
+            logger.warn("handleFromCookieResponse(String, UserCookie) received an error: " + err);
             return proc.callback(err, null);
 
         }
@@ -70,12 +70,22 @@ function VerifyAction(cookieString, request, proc) {
         //line up, if they don't likely got a MiM attack.
         //respond without any data.
 
-        if(result.getIP() !== proc.req.getSourceIP()){
+        if (!result) {
 
-            logger.warn("handleFromCookieResponse(String, UserCookie) received an IP from cookie that was not consistent with the source IP of the request, returning code: "+codes.INCONSISTENT_IP);
+            logger.warn("handleFromCookieResponse(String, UserCookie) received an invalid result object" + codes.DECRYPT_COOKIE_FAILED);
+            return proc.callback(codes.DECRYPT_COOKIE_FAILED, null);
+
+        } else if (!(result instanceof UserCookie)) {
+
+            logger.warn("handleFromCookieResponse(String, UserCookie) received a result object that is not a UserCookie" + codes.DECRYPT_COOKIE_FAILED);
+            return proc.callback(codes.DECRYPT_COOKIE_FAILED, null);
+
+        } else if (result.getIP() !== proc.req.getSourceIP()) {
+
+            logger.warn("handleFromCookieResponse(String, UserCookie) received an IP from cookie that was not consistent with the source IP of the request, returning code: " + codes.INCONSISTENT_IP);
             return proc.callback(codes.INCONSISTENT_IP, null);
 
-        }else if(!result.isComplete()) {
+        } else if (!result.isComplete()) {
 
             logger.warn("handleFromCookieResponse(String, UserCookie) received an incomplete UserCookie object, returning code: " + codes.DECRYPT_COOKIE_FAILED);
             return proc.callback(codes.DECRYPT_COOKIE_FAILED, null);
@@ -83,58 +93,31 @@ function VerifyAction(cookieString, request, proc) {
         }
 
         //otherwise, pass any errors or results back up the chain.
-        return proc.callback(err, result);
+        return proc.callback(null, result);
 
     };
 
     /**
-     * @param cookie {String}
+     * @throws {TypeError} if the input is not a valid string or if it is empty string.
+     *
+     * @param cookie {String} must be valid string type, cannot be empty string.
      */
     var setCookie = function (cookie) {
 
-        if (cookie && proc.userCookie) {
+        if (!cookie || typeof cookie !== 'string') {
+
+            throw new TypeError("VerifyAction.setCookie(String) expects a single string argument");
+
+        } else if (!proc.userCookie) {
+
+            proc.userCookie = new UserCookie(new User(), cookie, null);
+
+        } else {
 
             proc.userCookie.setCookieString(cookie);
 
         }
     };
-
-
-    /**
-     * @return  {String}
-     */
-    var getCookie = function () {
-
-    };
-
-
-    /**
-     * @return  {UserCookie}
-     */
-    var getUserCookie = function () {
-        return proc.userCookie;
-    };
-
-
-    /**
-     * @return {Request}
-     */
-    var getRequest = function () {
-        return proc.req;
-    };
-
-
-    /**
-     * @param req {Request} the object to set the internal request object to.
-     */
-    var setRequest = function (req) {
-
-        if (req) {
-            proc.req = req;
-        }
-
-    };
-
 
     /**
      * @description determines if the preconditions for executing this action are met.
@@ -145,7 +128,7 @@ function VerifyAction(cookieString, request, proc) {
      *
      * @return  {Boolean} true if the preconditions are met, false otherwise.
      */
-    var actionPreCondition = function (next) {
+    var actionPrecondition = function (next) {
 
         if (!next || !(next instanceof Function) || next.length !== 2) {
 
@@ -153,24 +136,20 @@ function VerifyAction(cookieString, request, proc) {
 
             throw new CallbackInvalidError("VerifyAction.doAction(next) requires that the next parameter be a callback function that takes exactly 2 arguments.");
 
-        } else if (!proc.userCookie || !(proc.userCookie instanceof UserCookie) || !proc.userCookie.getCookieString() || typeof proc.userCookie.getCookieString() !== 'string') {
+        } else if (!proc.userCookie || !(proc.userCookie instanceof UserCookie) || !proc.userCookie.getCookieString || typeof proc.userCookie.getCookieString() !== 'string') {
 
-            logger.info(util.inspect(proc.userCookie));
             //FAILED precondition userCookieValid.
 
             return false;
 
         } else if (!proc.req || !proc.req.isWellFormed()) {
 
-            logger.info(util.inspect(proc.request));
             //FAILED precondition requestValid.
 
             return false;
 
         } else if (!proc.upm) {
 
-            logger.info(proc.upm.name);
-            logger.info(util.inspect(proc.upm));
             //FAILED userPersistenceAvailable
 
             return false;
@@ -184,15 +163,11 @@ function VerifyAction(cookieString, request, proc) {
 
     };
 
-    proc.actionPreCondition       = actionPreCondition;
+    proc.actionPreCondition       = actionPrecondition;
     proc.handleFromCookieResponse = handleFromCookieResponse;
 
-    that.doAction      = doAction;
-    that.setCookie     = setCookie;
-    that.getCookie     = getCookie;
-    that.getUserCookie = getUserCookie;
-    that.getRequest    = getRequest;
-    that.setRequest    = setRequest;
+    that.doAction  = doAction;
+    that.setCookie = setCookie;
 
     return that;
 

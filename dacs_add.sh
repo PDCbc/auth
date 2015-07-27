@@ -2,17 +2,18 @@
 #
 # Exit on errors or unitialized variables
 #
-set -o nounset
+set -e -o nounset
 
 
 # Expected input
 #
 # $0 this script
-# $1 Endpoint number
-# $2 Clinician number
-# $3 Visualizer login name [optional]
-# $4 Jurisdiction [optional]
-# $5 Password [optional]
+# $1 Doctor (clinician) ID
+# $2 Clinic ID
+# $3 User name [optional]
+# $4 User role [optional]
+# $5 Jurisdiction [optional]
+# $6 Password [optional]
 
 
 # Check parameters
@@ -22,7 +23,7 @@ then
 	echo ""
 	echo "Unexpected number of parameters."
 	echo ""
-	echo "Usage: dacs_add.sh [userName] [userRole] [doctorID] [clinicID] [optional:jurisdiction] [optional:password]"
+	echo "Usage: dacs_add.sh [doctorID] [clinicID] [op:userName] [op:userRole] [op:jurisdiction] [op:password]"
 	echo ""
 	exit
 fi
@@ -30,20 +31,13 @@ fi
 
 # Set variables from parameters, prompt when password not provided
 #
-export U_NAME=${1}
-export U_ROLE=${2}
-export DOCTOR=${3}
-export CLINIC=${4}
+
+export DOCTOR=${1}
+export CLINIC=${2}
+export U_NAME=${3:-$DOCTOR}
+export U_ROLE=${4:-admin}
 export JURISDICTION=${5:-TEST}
-#
-if [ $# -eq  5 ]
-then
-	echo "Please provide a password for user "${U_NAME}":"
-	read -s PASSWORD
-	echo ""
-else
-	PASSWORD=${6}
-fi
+export PASSWORD=${6:-sample}
 
 
 # Add user to DACS
@@ -58,7 +52,7 @@ fi
 
 # Add user to DACS_ROLEFILE, notify if overwriting
 #
-if ( cat ${DACS_ROLEFILE} | grep -io ^${U_NAME}: )
+if ( cat ${DACS_ROLEFILE} | grep -qio ^${U_NAME}: )
 then
 	echo "Existing user role replaced"
 	sed -i /${U_NAME}:/d ${DACS_ROLEFILE}

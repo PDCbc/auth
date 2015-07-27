@@ -2,7 +2,6 @@
  * Generated On: 2015-7-17
  * @class VerifyController
  *
- * Handlesw
  */
 
 var RouteController = require('./RouteController').RouteController;

@@ -38,10 +38,16 @@ function VerifyAction(cookieString, request, proc) {
      */
     var doAction = function (next) {
 
-        if (!proc.actionPrecondition(next)) {
+        if (!proc.actionPreCondition(next)) {
 
             logger.warn("doAction(Function) failed precondition(s)");
             return next(codes.ERR_FAILED_ACTION_PRECONDITION, null);
+
+        }
+
+        if(proc.callback !== null){
+
+            throw new Error("VerifyAction.doAction() already bound to another action.");
 
         }
 
@@ -50,19 +56,21 @@ function VerifyAction(cookieString, request, proc) {
         //set the IP from the request.
         proc.userCookie.setIP(proc.req.getSourceIP());
 
-
         proc.upm.fromCookie(proc.userCookie, proc.handleFromCookieResponse);
 
     };
 
     var handleFromCookieResponse = function (err, result) {
 
+        var c = proc.callback;
+        proc.callback = null;
+
         //we expect that the result is a valid UserCookie object.
 
         if (err) {
 
             logger.warn("handleFromCookieResponse(String, UserCookie) received an error: " + err);
-            return proc.callback(err, null);
+            return c(err, null);
 
         }
 
@@ -73,27 +81,27 @@ function VerifyAction(cookieString, request, proc) {
         if (!result) {
 
             logger.warn("handleFromCookieResponse(String, UserCookie) received an invalid result object" + codes.DECRYPT_COOKIE_FAILED);
-            return proc.callback(codes.DECRYPT_COOKIE_FAILED, null);
+            return c(codes.DECRYPT_COOKIE_FAILED, null);
 
         } else if (!(result instanceof UserCookie)) {
 
             logger.warn("handleFromCookieResponse(String, UserCookie) received a result object that is not a UserCookie" + codes.DECRYPT_COOKIE_FAILED);
-            return proc.callback(codes.DECRYPT_COOKIE_FAILED, null);
+            return c(codes.DECRYPT_COOKIE_FAILED, null);
 
         } else if (result.getIP() !== proc.req.getSourceIP()) {
 
             logger.warn("handleFromCookieResponse(String, UserCookie) received an IP from cookie that was not consistent with the source IP of the request, returning code: " + codes.INCONSISTENT_IP);
-            return proc.callback(codes.INCONSISTENT_IP, null);
+            return c(codes.INCONSISTENT_IP, null);
 
         } else if (!result.isComplete()) {
 
             logger.warn("handleFromCookieResponse(String, UserCookie) received an incomplete UserCookie object, returning code: " + codes.DECRYPT_COOKIE_FAILED);
-            return proc.callback(codes.DECRYPT_COOKIE_FAILED, null);
+            return c(codes.DECRYPT_COOKIE_FAILED, null);
 
         }
 
         //otherwise, pass any errors or results back up the chain.
-        return proc.callback(null, result);
+        return c(null, result);
 
     };
 

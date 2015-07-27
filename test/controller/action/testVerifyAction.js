@@ -26,6 +26,9 @@ describe("VerifyAction", function () {
         req          = {
             isWellFormed: function () {
                 return true;
+            },
+            getSourceIP : function(){
+                return "foo";
             }
         };
         va           = VerifyAction(cookieString, req, proc)
@@ -364,6 +367,63 @@ describe("VerifyAction", function () {
             };
 
             proc.handleFromCookieResponse(null, uc);
+
+        });
+
+    });
+
+    describe("#doAction()", function () {
+
+        it("should return ERR_FAILED_ACTION_PRECONDITION if preconditions are failed", function (done) {
+
+            var cb = function (err, result) {
+
+                assert.equal(err, codes.ERR_FAILED_ACTION_PRECONDITION);
+                assert.equal(result, null);
+                assert.equal(proc.callback, null);
+                done();
+
+            };
+
+            proc.userCookie = null;
+            va.doAction(cb);
+
+        });
+
+        it("should throw an Error if the VerifyAction is already in use", function(done){
+
+            var cb = function(x,y){
+
+                assert.fail();
+
+            };
+
+            proc.callback = "foo";
+            assert.throws(function(){
+
+                va.doAction(cb);
+
+            }, Error);
+
+            done();
+
+        });
+
+        it("should call the upm.fromCookie function", function(done){
+
+            var fromCookie = function(x,y){
+
+                assert(x instanceof UserCookie);
+                assert(y instanceof Function);
+
+                done();
+
+            };
+
+            proc.callback = null;
+            proc.upm.fromCookie = fromCookie;
+
+            va.doAction(testFunction);
 
         });
 

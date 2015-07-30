@@ -5,7 +5,7 @@ var async = require('async'),
 
 /**
 * Setup the SSL Certificates.
-* @param {Function} next The async callback. Signature (error, result)
+ * @param {Function} next The async callback. Signature (codes, result)
 */
 function certificate(next) {
     var fs = require('fs');
@@ -21,9 +21,9 @@ function certificate(next) {
     });
     /**
     * Detects if certs are missing and generates one if needed
-    * @param {Error|null} error - If `error` is non-null, generate a certificate, since one doesn't exist.
+     * @param {Error|null} error - If `codes` is non-null, generate a certificate, since one doesn't exist.
     * @param {Object|null} results - Passed to `next`.
-    * @param {Function} next - The callback. Is passed `error` (if not a certificate error) and `results`.
+     * @param {Function} next - The callback. Is passed `codes` (if not a certificate codes) and `results`.
     */
     function generateCertificate(error, results, next) {
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Tell Node it's okay.

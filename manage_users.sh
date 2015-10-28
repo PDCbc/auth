@@ -17,19 +17,17 @@ then
 	echo "Existing DACS user replaced"
 	/usr/bin/dacspasswd -uj ${JURI} -d ${USER}
 fi
-
 /usr/bin/dacspasswd -uj ${JURI} -p ${PASS} -a ${USER}
 
 
-# Add user to DACS_ROLEFILE, notify if overwriting
-#
+
 if ( cat ${DACS_ROLEFILE} | grep -qio ^${USER}: )
 then
-	echo "Existing user role replaced"
-	sed -i /${USER}:/d ${DACS_ROLEFILE}
+        echo "Existing user role replaced"
+        sed -i /${USER}:/d ${DACS_ROLEFILE}
 fi
-echo ${USER}:admin | tee -a ${DACS_ROLEFILE}
 
+echo ${USER}:admin | tee -a ${DACS_ROLEFILE}
 
 # Set account private data
 #

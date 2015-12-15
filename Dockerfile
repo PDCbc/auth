@@ -1,72 +1,98 @@
 # Dockerfile for the PDC's Auth service
 #
-# Base image
+#
+# DACS-based authentication module used by the PDC's Visualizer.
+#
+# Example:
+# sudo docker pull pdcbc/auth
+# sudo docker run -d --name=auth -h auth --restart=always \
+#   -v /pdc/data/config/dacs/:/etc/dacs/:rw \
+#   pdcbc/auth
+#
+# Folder paths
+# - DACS config:     -v </path/>:/etc/dacs/:rw
+#
+# Modify default settings
+# - DACS federation: -e DACS_FEDERATION=<string>
+# -    jurisdiction: -e DACS_JURISDICTION=<string>
+# - Node secret:     -e NODE_SECRET=<string>
+#
+# Releases
+# - https://github.com/PDCbc/auth/releases
+#
 #
 FROM phusion/passenger-nodejs
+MAINTAINER derek.roberts@gmail.com
+ENV RELEASE 0.1.2
 
 
-# Update system, install DACS
+# Packages
 #
-ENV DEBIAN_FRONTEND noninteractive
-RUN echo 'Dpkg::Options{ "--force-confdef"; "--force-confold" }' \
-      >> /etc/apt/apt.conf.d/local
 RUN apt-get update; \
     apt-get upgrade -y; \
-    apt-get install -y dacs
-
-
-# Create startup script and make it executable
-#
-RUN mkdir -p /etc/service/app/
-RUN ( \
-      echo "#!/bin/bash"; \
-      echo "#"; \
-      echo "set -e -o nounset"; \
-      echo ""; \
-      echo ""; \
-      echo "# Prepare DACS"; \
-      echo "#"; \
-      echo "if [ ! -d \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/\${DACS_JURISDICTION}/ ]"; \
-      echo "then"; \
-      echo "  ("; \
-      echo "    mkdir -p \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/\${DACS_JURISDICTION}/"; \
-      echo "    cp /app/federations/dacs.conf \${DACS_STOREDIR}/federations/"; \
-      echo "    cp /app/federations/site.conf \${DACS_STOREDIR}/federations/"; \
-      echo "    touch \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/roles"; \
-      echo "    touch \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/federation_keyfile"; \
-      echo "  )||("; \
-      echo "    ERROR: DACS initialization unsuccessful >&2"; \
-      echo "  )"; \
-      echo "fi"; \
-      echo "chown -R app:app \${DACS_STOREDIR}/"; \
-      echo "/sbin/setuser app dacskey -uj \${DACS_JURISDICTION} -v \${DACS_STOREDIR}/federations/\${DACS_FEDERATION}/federation_keyfile"; \
-      echo ""; \
-      echo ""; \
-      echo "# Start service"; \
-      echo "#"; \
-      echo "export CONTROLPORT=\${PORT_AUTH_C}"; \
-      echo "export MAINPORT=\${PORT_AUTH_M}"; \
-      echo "export DACS=\${DACS_STOREDIR}"; \
-      echo "export FEDERATION=\${DACS_FEDERATION}"; \
-      echo "export JURISDICTION=\${DACS_JURISDICTION}"; \
-      echo "export ROLEFILE=\${DACS_ROLEFILE}"; \
-      echo "export KEYFILE=\${DACS_KEYFILE}"; \
-      echo "export SECRET=\${NODE_SECRET}"; \
-      echo "#"; \
-      echo "cd /app/"; \
-      echo "/sbin/setuser app npm start"; \
-    )  \
-      >> /etc/service/app/run
-RUN chmod +x /etc/service/app/run
+    apt-get install -y \
+      dacs \
+      git; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # Prepare /app/ and /etc/dacs/ folders
 #
 WORKDIR /app/
-COPY . .
-RUN npm install
-RUN mkdir -p /etc/dacs/
-RUN chown -R app:app /app/ /etc/dacs/
+RUN git clone https://github.com/pdcbc/auth.git -b ${RELEASE} .; \
+    npm install; \
+    mkdir -p /etc/dacs/; \
+    chown -R app:app /app/ /etc/dacs/
+
+
+# Create startup script and make it executable
+#
+RUN mkdir -p /etc/service/app/; \
+    ( \
+      echo "#!/bin/bash"; \
+      echo "#"; \
+      echo "set -e -o nounset"; \
+      echo ""; \
+      echo ""; \
+      echo "# Set variables, exports for npm"; \
+      echo "#"; \
+      echo "export MAINPORT=\${PORT_AUTH_M:-3005}"; \
+      echo "export CONTROLPORT=\${PORT_AUTH_C:-3006}"; \
+      echo "export JURISDICTION=\${DACS_JURISDICTION:-TEST}"; \
+      echo "export FEDERATION=\${DACS_FEDERATION:-pdc.dev}"; \
+      echo "#"; \
+      echo "export DACS=/etc/dacs"; \
+      echo "export ROLEFILE=\${DACS}/federations/\${FEDERATION}/roles"; \
+      echo "export KEYFILE=\${DACS}/federations/\${FEDERATION}/federation_keyfile"; \
+      echo "export SECRET=\${NODE_SECRET:-notVerySecret}"; \
+      echo ""; \
+      echo ""; \
+      echo "# Prepare DACS"; \
+      echo "#"; \
+      echo "if [ ! -d \${DACS}/federations/\${FEDERATION}/\${JURISDICTION}/ ]"; \
+      echo "then"; \
+      echo "  ("; \
+      echo "    mkdir -p \${DACS}/federations/\${FEDERATION}/\${JURISDICTION}/"; \
+      echo "    cp /app/federations/dacs.conf \${DACS}/federations/"; \
+      echo "    cp /app/federations/site.conf \${DACS}/federations/"; \
+      echo "    touch \${ROLEFILE}"; \
+      echo "    touch \${KEYFILE}"; \
+      echo "  )||("; \
+      echo "    ERROR: DACS initialization unsuccessful >&2"; \
+      echo "  )"; \
+      echo "fi"; \
+      echo "chown -R app:app \${DACS}/"; \
+      echo "/sbin/setuser app dacskey -uj \${JURISDICTION} -v \${KEYFILE}"; \
+      echo ""; \
+      echo ""; \
+      echo "# Start service"; \
+      echo "#"; \
+      echo "cd /app/"; \
+      echo "/sbin/setuser app npm start"; \
+    )  \
+      >> /etc/service/app/run; \
+    chmod +x /etc/service/app/run
 
 
 # Run Command

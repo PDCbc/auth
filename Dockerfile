@@ -17,22 +17,16 @@
 # -    jurisdiction: -e DACS_JURISDICTION=<string>
 # - Node secret:     -e NODE_SECRET=<string>
 #
-# Releases
-# - https://github.com/PDCbc/auth/releases
-#
 #
 FROM phusion/passenger-nodejs
 MAINTAINER derek.roberts@gmail.com
-ENV RELEASE 0.1.3
 
 
 # Packages
 #
 RUN apt-get update; \
-    apt-get upgrade -y; \
     apt-get install -y \
-      dacs \
-      git; \
+      dacs; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -40,10 +34,10 @@ RUN apt-get update; \
 # Prepare /app/ and /etc/dacs/ folders
 #
 WORKDIR /app/
-RUN git clone https://github.com/pdcbc/auth.git -b ${RELEASE} .; \
-    npm install; \
+COPY . .
+RUN chown -R app:app /app/ /etc/dacs/; \
     mkdir -p /etc/dacs/; \
-    chown -R app:app /app/ /etc/dacs/
+    /sbin/setuser app npm install
 
 
 # Create startup script and make it executable
@@ -61,11 +55,11 @@ RUN mkdir -p /etc/service/app/; \
       echo "export CONTROLPORT=\${PORT_AUTH_C:-3006}"; \
       echo "export JURISDICTION=\${DACS_JURISDICTION:-TEST}"; \
       echo "export FEDERATION=\${DACS_FEDERATION:-pdc.dev}"; \
+      echo "export SECRET=\${NODE_SECRET:-notVerySecret}"; \
       echo "#"; \
       echo "export DACS=/etc/dacs"; \
       echo "export ROLEFILE=\${DACS}/federations/\${FEDERATION}/roles"; \
       echo "export KEYFILE=\${DACS}/federations/\${FEDERATION}/federation_keyfile"; \
-      echo "export SECRET=\${NODE_SECRET:-notVerySecret}"; \
       echo ""; \
       echo ""; \
       echo "# Prepare DACS"; \
@@ -98,3 +92,11 @@ RUN mkdir -p /etc/service/app/; \
 # Run Command
 #
 CMD ["/sbin/my_init"]
+
+
+# Ports and volumes
+#
+EXPOSE 3005
+EXPOSE 3006
+#
+VOLUME /etc/dacs/
